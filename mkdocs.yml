@@ -11,9 +11,18 @@ theme:
   name: material
   logo: images/verse.svg
   palette:
-    scheme: slate  # Dark theme
-    primary: black
-    accent: deep orange
+    - scheme: slate
+      primary: black
+      accent: deep orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    - scheme: default
+      primary: black
+      accent: deep orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
   features:
 #    - content.footnote.tooltips
 #    - navigation.tabs
