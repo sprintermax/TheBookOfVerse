@@ -622,6 +622,9 @@ definitions as `@deprecated`.
 
 ### Custom Attributes
 
+!!! warning "Internal Feature"
+    Custom attributes are currently an internal feature and cannot be created by end-users.
+
 You can create custom attributes by inheriting from the special
 `attribute` class. Custom attributes allow you to attach
 domain-specific metadata to your code:
@@ -713,6 +716,9 @@ compiler error. For example, a function-scoped attribute cannot be
 applied to a class.
 
 ### Getter and Setter Accessors
+
+!!! warning "Internal Feature"
+    Getter and setter accessors are currently an internal feature and cannot be used by end-users.
 
 While not strictly annotations, the `<getter(...)>` and
 `<setter(...)>` specifiers provide a related form of metadata for

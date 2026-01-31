@@ -1133,6 +1133,9 @@ Add5(3)  # Returns 8
 
 ## Nested Functions
 
+!!! warning "Unreleased Feature"
+    Nested functions have not yet been released. This section documents planned functionality that is not currently available.
+
 Nested functions (also called local functions) are functions defined
 inside other functions. They provide encapsulation, enable closures
 over local variables, and help organize complex logic within a

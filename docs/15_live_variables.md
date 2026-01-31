@@ -1,5 +1,8 @@
 # Live Variables
 
+!!! warning "Unreleased Feature"
+    Live variables have not yet been released. This chapter documents planned functionality that is not currently available.
+
 Live variables represent a reactive programming paradigm in Verse,
 enabling variables to automatically recompute their values when
 dependencies change. Rather than requiring explicit callbacks or event
