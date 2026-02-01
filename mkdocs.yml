@@ -11,19 +11,27 @@ theme:
   name: material
   logo: images/verse.svg
   palette:
-    - scheme: slate
-      primary: black
-      accent: deep orange
+    - media: "(prefers-color-scheme)"
       toggle:
         icon: material/brightness-7
         name: Switch to Light mode
 
-    - scheme: default
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
       primary: black
       accent: deep orange
       toggle:
         icon: material/brightness-2
         name: Switch to Dark mode
+
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: deep orange
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to System preference
+
   features:
 #    - content.footnote.tooltips
 #    - navigation.tabs
@@ -53,7 +61,7 @@ plugins:
 
 extra_css:
   - extra.css
-  - VerseDark.css
+  - css/Verse.css
 
 nav:
   - Home: index.md
