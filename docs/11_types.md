@@ -100,6 +100,15 @@ MyI:int   = 42
 MyF:float = MyI * 1.0  # Explicit conversion to float
 ```
 
+!!! note 
+    The strongest reason for dissallowing implicit conversions is that
+	they can cause code to break when new overloadings to a function
+	are added. Imagine a call to function `f` that takes a float such
+	as `f(1)`, if the integer argument was implicitly converted to a 
+	float and, in some future library release, an overload `f(:int)` 
+	was added, the call would silently invoke that new function
+	and potentially change the result of the computation.
+
 The reverse conversion, from float to integer, requires choosing a
 rounding strategy:
 
