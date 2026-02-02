@@ -913,17 +913,34 @@ operator'='(X:t, Y:t where t:subtype(comparable))<decides>:t
 operator'<>'(X:t, Y:t where t:subtype(comparable))<decides>:t
 ```
 
-This signature reveals something subtle: both operands must be of the
-same type. This prevents nonsensical comparisons while allowing
-flexibility within type hierarchies:
+The signatures requires that both operands be subtypes of comparable
+and the return type is the least upper bound of their types.
 
 <!--NoCompile-->
 <!-- 46 -->
 ```verse
 0 = 0        # Succeeds - both are int
 0.0 = 0.0    # Succeeds - both are float
-0 = 0.0      # Fails - int and float don't share a subtype relationship
+0 = 0.0      # Fails - there is no implicit conversion from int to float
 ```
+
+Here is an example that highlights how the return type of `=` is computed:
+
+<!--46b -->
+```verse
+I:int=1
+R:rational=1/3
+X:rational= (I=R)  # Compiles and fails at runtime
+
+I:int=1
+S:string="hi"
+Y:comparable= (I=S)  # Compiles and fails at runtime
+```
+
+In the case of variable `X`, its type can be either `rational` or
+`comparable`. For variable `Y`, the only common type between `int` and
+`string` is `comparable`.
+
 
 Classes require special handling for comparability. By default, class
 instances are not comparable because there's no universal way to
