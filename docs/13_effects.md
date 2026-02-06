@@ -112,12 +112,12 @@ error (cannot have two exclusive effects).
 
 |Fundamental Effect|Effect Specifier|Effect Family|Effects implied by Specifier | Notes |
 | -----        | -----------    | -------     | ----- | ---- |
-| **succeeds** |                | Cardinality |                  | *No specifier; Can Succeed* |
+| **succeeds** |                | Cardinality |                  | *No specifier; Must Succeed* |
 | **fails**    |                | Cardinality |                  | *No specifier; Can Fail* |
 |              | `<decides>`    | Cardinality | `{succeeds, fails}` | *Cannot combine with `<suspends>`* |
 | **reads**    | `<reads>`      | Heap        | `{reads}`        | *Allows reading mutable states* |
 | **writes**   | `<writes>`     | Heap        | `{writes}`       | *Allows writing mutable states* |
-| **allocates**| `<allocates>`  | Heap        | `{allocates}`    | *Allows memory allocation* |
+| **allocates**| `<allocates>`  | Heap        | `{allocates}`    | *Allows allocation of mutable memory* |
 |              | `<transacts>`  | Heap        | `{reads, writes, allocates}` | *Exclusive; default* |
 |              | `<computes>`   | Heap        | `{}`             | *Exclusive; Pure computation* |
 | **suspends** | `<suspends>`   | Suspension  | `{suspends}`     | *Cannot combine with `<decides>`* |

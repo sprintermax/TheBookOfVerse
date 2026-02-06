@@ -1,6 +1,6 @@
 # Container Types
 
-Container types in Verse manage collections and structured data. Optionals represent values that may or may not be present. Tuples group multiple values of different types into ordered sequences. Arrays hold zero or more values regardless of the type with efficient indexed access. Maps associate keys with values for fast lookups. Weak maps extend regular maps with weak reference semantics for persistent storage.
+Container types in Verse manage collections and structured data. Optionals represent values that may or may not be present. Tuples group multiple values of different types into ordered sequences. Arrays hold zero or more values with efficient indexed access. Maps associate keys with values for fast lookups. Weak maps extend regular maps with weak reference semantics for persistent storage.
 
 Let's explore each container type in detail, starting with optionals that elegantly handle the presence or absence of values.
 
@@ -94,8 +94,7 @@ A common use case is searching for something that may or may not be there. Imagi
 ```verse
 Find(N:[]int, X:int):?int =
     for (I := 0..N.Length):
-        if (N[I] = X):
-            return option{I}
+        if (N[I] = X) then return option{I}
     return false
 
 var Numbers:[]int = array{10, 20, 30}
@@ -1496,7 +1495,7 @@ This applies to complete map replacements (for local variables), individual entr
 !!! warning "Important"
     Current island limits and rules may vary and not match exactly the values shown bellow
 
-There is a **limit on the number of persistent `weak_map` variables** per island. In the standard environment, this limit is 4 persistent weak_maps. Exceeding this limit produces error 3502:
+There is a **limit on the number of persistent `weak_map` variables** per island. In the standard environment, this limit is 4 persistent weak_maps. Exceeding this limit produces an error:
 
 <!--NoCompile-->
 <!-- 83 -->

@@ -855,10 +855,9 @@ ProcessFile(FileName:string)<transacts><decides>:void =
 Deferred code executes when the scope exits successfully or through
 explicit control flow like `return`:
 
-<!--NoCompile-->
 <!-- 62 -->
 ```verse
-ProcessQuery()<transacts><decides>:void =
+ProcessQuery()<transacts>:void =
     ConnId := OpenConnection()
     defer:
         CloseConnection(ConnId)  # Cleanup always needed
@@ -866,7 +865,7 @@ ProcessQuery()<transacts><decides>:void =
     for (Attempt := 1..5):
         if (Result := Query[ConnId]):
             ProcessResult(Result)
-            return  # defer executes after return being called  ## TODO CANT RETURN
+            return  # defer executes after return being called
 
     # defer executes before leaving the function scope on success
 ```
