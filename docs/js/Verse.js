@@ -3,7 +3,8 @@ import * as Shiki from "https://esm.sh/shiki@3.0.0";
 const VerseHighlighting = async () => {
     const [LangResponse, ThemeResponse] = await Promise.all([
         fetch("/book/Assets/Verse.json"),
-        fetch("/book/Assets/VerseDark.json")
+        fetch("/book/Assets/VerseDark.json"),
+        fetch("/book/Assets/VerseLight.json")
     ]);
 
     const VerseGrammar = await LangResponse.json();
