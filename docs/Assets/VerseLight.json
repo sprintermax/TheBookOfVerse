@@ -8,7 +8,7 @@
         "editor.lineHighlightBackground": "#12002C",
         "editor.lineHighlightBorder": "#12002C",
         "editor.background": "#000000",
-        "editor.foreground": "#D4D4D4",
+        "editor.foreground": "#000000",
         "editor.inactiveSelectionBackground": "#3A3D41",
         "editorIndentGuide.background": "#404040",
         "editorIndentGuide.activeBackground": "#707070",
@@ -35,7 +35,7 @@
         {
             "scope": "comment",
             "settings": {
-                "foreground": "#77B06B",
+                "foreground": "#00000080",
                 "fontStyle": ""
             }
         },
@@ -48,7 +48,7 @@
         {
             "scope": "constant.numeric",
             "settings": {
-                "foreground": "#c2ddb4"
+                "foreground": "#4e7b37"
             }
         },
         {
@@ -66,19 +66,19 @@
         {
             "scope": "string",
             "settings": {
-                "foreground": "#C09077"
+                "foreground": "#7a4f38"
             }
         },
         {
             "scope": "string.tag",
             "settings": {
-                "foreground": "#C09077"
+                "foreground": "#7a4f38"
             }
         },
         {
             "scope": "string.value",
             "settings": {
-                "foreground": "#C09077"
+                "foreground": "#7a4f38"
             }
         },
         {
@@ -109,7 +109,7 @@
         {
             "scope": "keyword.operator",
             "settings": {
-                "foreground": "#77AFAF"
+                "foreground": "#3da1a1"
             },
             "name": "infix or prefix operator"
         },
@@ -123,21 +123,21 @@
         {
             "scope": "entity.name.function",
             "settings": {
-                "foreground": "#e5c2ff"
+                "foreground": "#6500b3"
             },
             "name": "defined identifier"
         },
         {
             "scope": "variable",
             "settings": {
-                "foreground": "#b9d6ff"
+                "foreground": "#004ab3"
             },
             "name": "referenced identifier"
         },
         {
             "scope": "path",
             "settings": {
-                "foreground": "#b9d6ff"
+                "foreground": "#004ab3"
             },
             "name": "path constant"
         },
@@ -151,14 +151,14 @@
         {
             "scope": "keyword.declaration",
             "settings": {
-                "foreground": "#8499b7"
+                "foreground": "#425570"
             },
             "name": "punctuation delimiting definitions"
         },
         {
             "scope": "punctuation.definition",
             "settings": {
-                "foreground": "#8499b7"
+                "foreground": "#70819a"
             },
             "name": "punctuation delimiting markup and attributes"
         },
@@ -274,4 +274,3 @@
         }
     ]
 }
-// VerseLight by Lenka
