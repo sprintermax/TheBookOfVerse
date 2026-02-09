@@ -48,10 +48,12 @@ wrap it in a regular function or nested function.
 ## Integers
 
 The `int` type represents integer, non-fractional values. An `int` can
-contain a positive number, a negative number, or zero.  Supported
-integers range from `-9,223,372,036,854,775,808` to
-`9,223,372,036,854,775,807`, inclusive. Literals (numbers that can be
-written as constants in code) are limited in size.
+contain a positive number, a negative number, or zero. At runtime,
+integers are arbitrary precision and can grow beyond any fixed size.
+However, integer *literals* must fit within a 64-bit signed range
+(`-9,223,372,036,854,775,808` to `9,223,372,036,854,775,807`), and
+integers exceeding 64-bit have limited support (e.g., cannot be used
+in string interpolation or persisted).
 
 You can include `int` values within your code as literals.
 

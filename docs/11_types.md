@@ -1701,7 +1701,7 @@ SubtypeVar:subtype(sub_class) = sub_class
 SupertypeVar:subtype(super_class) = SubtypeVar  # Valid
 
 # Reverse fails - super_class is not <: sub_class
-# SubtypeVar2:subtype(sub_class) = super_class  # Error 3509
+# SubtypeVar2:subtype(sub_class) = super_class
 ```
 
 This also applies to interfaces:

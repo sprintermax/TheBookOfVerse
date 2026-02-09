@@ -709,7 +709,7 @@ T0(0) = 30
 T0(1) = 40
 ```
 
-**Cannot mutate elements** (compile error 3509):
+**Cannot mutate elements:**
 
 <!--NoCompile-->
 <!-- 34 -->

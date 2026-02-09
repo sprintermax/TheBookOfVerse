@@ -1266,7 +1266,7 @@ Because `weak_map` is a supertype of `map`, you can assign regular maps to weak_
 
 ### Restrictions
 
-**No Length Property (Error 3506):**
+**No Length Property:**
 
 <!--NoCompile-->
 <!-- 70 -->
@@ -1276,7 +1276,7 @@ var MyWeakMap:weak_map(int,int) = map{1 => 2}
 # Size := MyWeakMap.Length
 ```
 
-**No Iteration (Error 3524):**
+**No Iteration:**
 
 <!--NoCompile-->
 <!-- 71 -->
@@ -1286,7 +1286,7 @@ var MyWeakMap:weak_map(int,int) = map{1 => 2, 3 => 4}
 # for (Entry : MyWeakMap) {}
 ```
 
-**Cannot Coerce to Comparable (Error 3509):**
+**Cannot Coerce to Comparable:**
 
 <!--NoCompile-->
 <!-- 72 -->
@@ -1296,7 +1296,7 @@ var MyWeakMap:weak_map(int,int) = map{}
 # C:comparable = MyWeakMap
 ```
 
-**Cannot Join with Regular Maps (Error 3510):**
+**Cannot Join with Regular Maps:**
 
 <!--NoCompile-->
 <!-- 73 -->
@@ -1311,7 +1311,7 @@ var MyWeakMap:weak_map(int,int) = map{1 => 2}
 
 When using `weak_map` as a module-scoped variable (for persistent data), there are additional critical restrictions:
 
-**Cannot Read Complete Map (Error 3502):**
+**Cannot Read Complete Map:**
 
 <!--NoCompile-->
 <!-- 74 -->
@@ -1325,7 +1325,7 @@ GetAllData():weak_map(player, int) =
     map{}  # Must construct new map instead
 ```
 
-**Cannot Write Complete Map (Error 3502):**
+**Cannot Write Complete Map:**
 
 <!--NoCompile-->
 <!-- 75 -->
@@ -1361,7 +1361,7 @@ This restriction exists because module-scoped weak_maps integrate with the persi
 
 For module-scoped `var weak_map` variables, both key and value types have strict requirements:
 
-**Key Type Must Have `<module_scoped_var_weak_map_key>` Specifier (Error 3502):**
+**Key Type Must Have `<module_scoped_var_weak_map_key>` Specifier:**
 
 <!--NoCompile-->
 <!-- 77 -->
@@ -1378,7 +1378,7 @@ regular_class := class<unique><allocates><computes> {}
 # var InvalidData:weak_map(regular_class, int) = map{}
 ```
 
-**Value Type Must Be Persistable (Error 3502):**
+**Value Type Must Be Persistable:**
 
 <!--NoCompile-->
 <!-- 78 -->
