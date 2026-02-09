@@ -1798,7 +1798,7 @@ X := container(int){Value := 42}
 Different instantiations like `container(int)` and `container(float)`
 are completely distinct types with no subtype relationship, so cast
 expressions between them are disallowed. The compiler rejects these
-casts with error 3502 even though both are concrete types.
+casts even though both are concrete types.
 
 This restriction extends to parametric class hierarchies:
 

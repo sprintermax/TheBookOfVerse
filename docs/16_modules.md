@@ -664,7 +664,7 @@ ExternalModule<public> := module:
 MyModule := module:
     using{ExternalModule}
 
-    # Without (local:) - error 3588/3532: shadowing conflict
+    # Without (local:) - shadowing conflict
     # Foo():float =
     #     ShadowX:float = 0.0  # Error: conflicts with ExternalModule.ShadowX
     #     ShadowX
@@ -741,12 +741,12 @@ my_class := class:
         set (my_class:)Value = (local:)Value
 ```
 
-The `(local:)` qualifier **cannot** be used in these contexts (all produce error 3612):
+The `(local:)` qualifier **cannot** be used in these contexts:
 
 
 **Nested Scope Limitation:**
 
-Currently, you **cannot** redefine a `(local:)` qualified identifier in nested blocks (error 3532):
+Currently, you **cannot** redefine a `(local:)` qualified identifier in nested blocks:
 
 <!--NoCompile-->
 ```verse

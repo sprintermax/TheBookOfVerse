@@ -986,7 +986,7 @@ Semicolons are *not allowed* in parameter lists - you must use commas:
 # VALID: Comma-separated parameters
 ValidFunc(A:int, B:int):void = {}
 
-# INVALID: Semicolon in parameters (error 3540)
+# INVALID: Semicolon in parameters
 # InvalidFunc(A:int; B:int):void = {}
 ```
 

@@ -496,8 +496,8 @@ keyword_enum := enum:
 
 # Without qualification - errors
 # bad_enum := enum:
-#    public    # Error 3532: reserved word
-#    for       # Error 3514: reserved keyword
+#    public    # Error: reserved word
+#    for       # Error: reserved keyword
 ```
 
 This is particularly useful when modeling language constructs, access levels, or any domain where reserved words make natural value names.
@@ -514,7 +514,7 @@ recursive_enum := enum:
 
 # Without qualification - error
 # bad_recursive := enum:
-  #  bad_recursive  # Error 3532: shadows the type name
+  #  bad_recursive  # Error: shadows the type name
 ```
 
 ### Attributes on Enums
