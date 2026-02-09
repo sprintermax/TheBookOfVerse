@@ -616,11 +616,28 @@ MinFinite:finite = -1.7976931348623157e+308
 
 ### IEEE 754 Edge Cases
 
-**No Signed Zero:**
+**Negative and Positive Zero:**
 
-Unlike IEEE 754 which distinguishes between `+0.0` and `-0.0`, Verse
-has only one zero value. The value `0.0` is neither positive nor
-negative in Verse.
+IEEE 754 distinguishes between `+0.0` and `-0.0`. In verse Zero is just Zero,
+with no distinction between positve or negative.
+
+When any expression evaluates to Zero, the sign is discarded:
+<!-- 34 -->
+```verse
+# Integer Zero (type{0})
+Value1 := -0
+Value2 := +0
+
+Value1 = Value2 # Succeeds
+-0 = +0         # Succeeds
+
+# Float Zero (type{0.0})
+Value3 := -0.0
+Value4 := +0.0
+
+Value3 = Value4 # Succeeds
+-0.0 = +0.0     # Succeeds
+```
 
 **Floating-Point Precision:**
 

@@ -534,13 +534,13 @@ my_attribute := class(attribute):
     # Apply to enum and enumerators
 @my_attribute{}
 game_state := enum:
-    @my_attribute(MyMetaData = "Initial")
+    @my_attribute{MyMetaData = "Initial"}
     MainMenu
 
-    @my_attribute(MyMetaData = "Active")
+    @my_attribute{MyMetaData = "Active"}
     Playing
 
-    @my_attribute(MyMetaData = "Paused")
+    @my_attribute{MyMetaData = "Paused"}
     Paused
 ```
 
@@ -600,9 +600,11 @@ StateIDs:[game_state]int = map{
 }
 
 # In generic functions
-FindState(States:[]game_state, Target:game_state)<decides>:int =
-    for (State:States, GameState->ID : StateIDs):
-        if (State = Target):
-            ID
-    -1
+FindStateID(States:[]game_state, Target:game_state)<decides>:int =
+    for (
+        State : States, State = Target,
+        ID := StateIDs[State]
+    ):
+        return ID
+    false? # fails if state is not found
 ```
