@@ -58,10 +58,11 @@ UppercaseHex := 0xABCDEF
 ```
 
 Integer literals must fit within a 64-bit signed integer range
-(`-9223372036854775808` to `9223372036854775807`). Integer *values*
-are, so called, BigInt and can grow past the values that can be
-written as literals. Current implementation limitations also prevent
-using BigInts in some context (e.g. in string interpolation).
+(`-9223372036854775808` to `9223372036854775807`). At runtime,
+integer values are arbitrary precision and can grow past the values
+that can be written as literals. However, integers exceeding 64-bit
+have limited support (e.g., cannot be used in string interpolation
+or persisted).
 
 #### Float Literals
 
@@ -91,8 +92,7 @@ Some rules:
 
 - Must have decimal point: `1.0` is valid, `1` is an integer
 - Final decimal point without digits is invalid: `1.` is a syntax error
-- The `f64` suffix explicitly marks a 64-bit float (IEEE 754 double precision)
-- `f16` and `f32` are currently unsupported
+- All floats are 64-bit (IEEE 754 double precision); the `f64` suffix is optional
 - Unary operators work as with integers: `-1.0`, `+1.0`
 
 Float literals must fit within IEEE 754 double-precision range or produce compile-time errors:

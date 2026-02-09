@@ -33,7 +33,7 @@ The following primitive types are persistable by default:
 - Numeric Types:
 
    - **`logic`** - Boolean values (true/false)
-   - **`int`** - Integer values (currently 64-bit signed)
+   - **`int`** - Integer values (must fit in 64-bit signed range for persistence)
    - **`float`** - Floating-point numbers
 
 - Character Types:

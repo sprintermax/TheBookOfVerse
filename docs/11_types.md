@@ -616,53 +616,11 @@ MinFinite:finite = -1.7976931348623157e+308
 
 ### IEEE 754 Edge Cases
 
-**Negative Zero:**
+**No Signed Zero:**
 
-IEEE 754 distinguishes between `+0.0` and `-0.0`. Refinement types
-respect this:
-
-<!--versetest
-negative := type{_X:float where _X < 0.0}
-
-assert: 
-   negative[-1.0]          # Valid
-   negative[-0.5]          # Valid
-<#
--->
-<!-- 34 -->
-```verse
-# Negative values (excludes both zeros)
-negative := type{_X:float where _X < 0.0}
-
-negative[-1.0]          # Valid
-negative[-0.5]          # Valid
-negative[0.0 / -1.0]    # Fails: produces -0.0, not truly negative
-```
-<!-- #> -->
-
-The expression `0.0 / -1.0` produces `-0.0`, which is **not** less
-than `0.0` in IEEE 754 semantics, so it fails the constraint.
-
-**Positive vs Zero:**
-
-<!--versetest
-positive := type{_X:float where _X > -0.0}
-
-assert:
-   positive[1.0]   # Valid
-   positive[0.1]   # Valid
-<#
--->
-<!-- 35 -->
-```verse
-# Positive (excludes zero)
-positive := type{_X:float where _X > -0.0}
-
-positive[1.0]   # Valid
-positive[0.1]   # Valid
-positive[0.0]   # Fails: zero not considered positive
-```
-<!-- #> -->
+Unlike IEEE 754 which distinguishes between `+0.0` and `-0.0`, Verse
+has only one zero value. The value `0.0` is neither positive nor
+negative in Verse.
 
 **Floating-Point Precision:**
 
