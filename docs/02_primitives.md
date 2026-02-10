@@ -165,12 +165,16 @@ ProcessRational(0) = 0/1     # 0 is implicitly 0/1 (rational)
 However, you *cannot* return a rational where an int is expected—that
 would be a narrowing conversion:
 
-<!--NoCompile-->
+<!--versetest
+assert_semantic_error(3510):
+    BadFunction(X:rational):int = X
+<#
+-->
 <!-- 09 -->
 ```verse
-# Invalid: Cannot narrow rational to int
-# BadFunction(X:rational):int = X  # ERROR 3510
+BadFunction(X:rational):int = X  # Error
 ```
+<!-- #> -->
 
 Whole number rationals equal their integer equivalents:
 
@@ -233,13 +237,18 @@ if (Result := Half[7]):
 Because `int` is a subtype of `rational`, you *cannot* overload based
 solely on these types:
 
-<!--NoCompile-->
+<!--versetest
+assert_semantic_error(3532):
+    ProcessValue(X:int):void = {}
+    ProcessValue(X:rational):void = {}
+<#
+-->
 <!-- 13 -->
 ```verse
-# Invalid: Cannot distinguish int from rational
-# ProcessValue(X:int):void = {}
-# ProcessValue(X:rational):void = {}  # Error!
+ProcessValue(X:int):void = {}
+ProcessValue(X:rational):void = {}  # Error!
 ```
+<!-- #> -->
 
 The compiler sees `int` as more specific than `rational`, so the
 signatures would be ambiguous.
@@ -591,11 +600,31 @@ if (not Quotient[10, 0]):
 
 The modulo result always satisfies:
 
-<!--NoCompile-->
+<!--versetest
+assert:
+    # Test the identity with various values
+    Dividend:int = 15
+    Divisor:int = 4
+    Dividend = Quotient[Dividend, Divisor] * Divisor + Mod[Dividend, Divisor]
+
+assert:
+    # Negative dividend
+    Dividend:int = -15
+    Divisor:int = 4
+    Dividend = Quotient[Dividend, Divisor] * Divisor + Mod[Dividend, Divisor]
+
+assert:
+    # Negative divisor
+    Dividend:int = -1
+    Divisor:int = -2
+    Dividend = Quotient[Dividend, Divisor] * Divisor + Mod[Dividend, Divisor]
+<#
+-->
 <!-- 30 -->
 ```verse
 Dividend = Quotient[Dividend, Divisor] * Divisor + Mod[Dividend, Divisor]
 ```
+<!-- #> -->
 
 The sign of the result follows specific rules:
 
@@ -648,7 +677,34 @@ The formula is: `From + Parameter * (To - From)`
 `IsFinite` checks if a float is finite and suceeds if the value
 is not NaN, Inf, or -Inf. And fails otherwise:
 
-<!--versetest-->
+<!--versetest
+# Method on float values
+# X.IsFinite()<computes><decides>:float
+
+assert:
+    (5.0).IsFinite[]      # succeeds
+    (0.0).IsFinite[]      # succeeds
+    (-100.0).IsFinite[]   # succeeds
+
+assert:
+    not (Inf).IsFinite[]  # fails
+assert:
+    not (-Inf).IsFinite[] # fails
+assert:
+    not (NaN).IsFinite[]  # fails
+
+assert:
+    # Returns the same number if succeeds
+    (15.16).IsFinite[] = 15.16 # succeeds, both are equal
+
+# Useful for validation
+# SafeCalculation(X:float, Y:float)<decides>:float =
+#     X.IsFinite[] and Y.IsFinite[]
+#     Result := X / Y
+#     Result.IsFinite[]
+#     Result
+<#
+-->
 <!-- 33 -->
 ```verse
 # Method on float values
@@ -672,6 +728,7 @@ is not NaN, Inf, or -Inf. And fails otherwise:
 #     Result.IsFinite[]
 #     Result
 ```
+<!-- #> -->
 
 Verse provides constants for common mathematical values:
 
@@ -714,23 +771,26 @@ use success and failure instead for that purpose, whenever
 possible. The conditional only executes the `then` branch if the guard
 succeeds:
 
-<!--verse
+<!--versetest
 ShowTargetLockedIcon():void={}
-F(TargetLocked:?int):void={
+TargetLocked:?int = option{42}
 -->
 <!-- 36 -->
 ```verse
 if (TargetLocked?):
     ShowTargetLockedIcon()
 ```
-<!-- } -->
 
 To convert an expression that has the `<decides>` effect to `true` on
 success or `false` on failure, use `logic{ exp }`:
 
-<!--verse
+<!--versetest
 using{ /Verse.org/Random }
-F(Frequency:int)<decides>:void={
+Frequency:int = 10
+F()<decides>:void=
+    GotIt := logic{GetRandomInt(0, Frequency) <> 0}
+    GotIt?
+<#
 -->
 <!-- 37 -->
 ```verse
@@ -739,7 +799,7 @@ GotIt?                                            # then this succeeds
 GotIt = false                                     # and this fails
 not GotIt?                                        # and this fails too
 ```
-<!-- } -->
+<!-- #> -->
 
 ## Characters and Strings
 
@@ -1126,7 +1186,13 @@ throughout the function.
 While `where t:type` accepts any type, you can use more specific
 constraints like `subtype` to limit which types are valid:
 
-<!--NoCompile-->
+<!--versetest
+# Only accepts types that are subtypes of comparable
+Sort(Items:[]t where t:subtype(comparable)):[]t =
+    # Can use comparison operations because t is comparable
+    Items
+<#
+-->
 <!-- 78 -->
 ```verse
 # Only accepts types that are subtypes of comparable
@@ -1134,6 +1200,7 @@ Sort(Items:[]t where t:subtype(comparable)):[]t =
     # Can use comparison operations because t is comparable
     ...
 ```
+<!-- #> -->
 
 For comprehensive documentation on parametric functions, see the
 Functions chapter.
@@ -1144,6 +1211,7 @@ Unlike many languages where types only exist at compile time, Verse
 treats types as *first-class values* that can be computed, stored, and
 manipulated:
 
+<!--versetest-->
 <!-- 79 -->
 ```verse
 # Function that returns a type value
@@ -1163,7 +1231,17 @@ TypeRegistry:[string]type = map{
 
 **Passing types between functions:**
 
-<!--NoCompile-->
+<!--versetest
+# Helper function that takes a type parameter
+CreateArray(ElementType:type, Size:int):[]ElementType =
+    # This pattern works in some contexts
+    array{}
+
+# Function that uses the helper
+MakeIntArray():[]int =
+    CreateArray(int, 10)
+<#
+-->
 <!-- 80 -->
 ```verse
 # Helper function that takes a type parameter
@@ -1175,6 +1253,7 @@ CreateArray(ElementType:type, Size:int):[]ElementType =
 MakeIntArray():[]int =
     CreateArray(int, 10)
 ```
+<!-- #> -->
 
 ### Returning Options of Type Parameters
 
@@ -1182,6 +1261,17 @@ A common pattern is to have functions return `?t` where `t` is a type
 parameter, allowing the function to work with any type while
 potentially failing:
 
+<!--versetest
+# return type `t` must be the same type as the `Value` param type
+MaybeValue(Value:t, Condition:logic where t:type):?t =
+    if (Condition?) then option{Value} else false
+
+assert:
+    # Usage
+    X:?int = MaybeValue(5, false)  # Returns false as ?int
+    Y:?float = MaybeValue(3.14, true)  # Returns option{3.14} as ?float
+<#
+-->
 <!-- 81a -->
 ```verse
 # return type `t` must be the same type as the `Value` param type
@@ -1192,6 +1282,7 @@ MaybeValue(Value:t, Condition:logic where t:type):?t =
 X:?int = MaybeValue(5, false)  # Returns false as ?int
 Y:?float = MaybeValue(3.14, true)  # Returns option{3.14} as ?float
 ```
+<!-- #> -->
 
 <!--NoCompile-->
 <!-- 81b -->
@@ -1219,6 +1310,7 @@ The `type` constraint in where clauses is the most permissive - it
 accepts any Verse type. For more specific requirements, Verse provides
 additional constraints:
 
+<!--versetest-->
 <!-- 82 -->
 ```verse
 # Most permissive: any type
@@ -1251,6 +1343,7 @@ While `type` enables powerful abstractions, there are some limitations:
 
 **Cannot inspect type structure at runtime:**
 
+<!--NoCompile-->
 <!-- 84 -->
 ```verse
 # Cannot do this - no runtime type introspection
@@ -1286,6 +1379,7 @@ has no more precise type to assign.
 One way `any` appears is when combining values that do not share a
 more specific supertype. For example:
 
+<!--versetest-->
 <!-- 86 -->
 ```verse
 Letters := enum:
@@ -1310,6 +1404,7 @@ A more useful role for `any` is as the type of a parameter that is
 required syntactically but not actually used. This pattern can arise
 when implementing interfaces that require a certain method signature.
 
+<!--versetest-->
 <!-- 87 -->
 ```verse
 FirstInt(X:int, :any) : int = X
@@ -1321,6 +1416,7 @@ any type, it is given the type `any`.
 In more general code, the same idea can be expressed using *parametric
 types*, making the function flexible while still precise:
 
+<!--versetest-->
 <!-- 88 -->
 ```verse
 First(X:t, :any where t:type) : t = X
@@ -1343,6 +1439,7 @@ discards it and returns `false`.
 A function whose purpose is to perform an effect, rather than compute
 a value, has return type `void`.
 
+<!--versetest-->
 <!-- 89 -->
 ```verse
 LogMessage(Msg:string) : void =
