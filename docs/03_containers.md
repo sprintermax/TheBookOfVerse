@@ -10,61 +10,50 @@ An optional is an immutable container that either holds a value of type `t` or n
 
 You can create a non-empty optional with `option{...}`, which wraps a value into an optional. For example:
 
-<!--verse
-F():void={
--->
+<!--versetest-->
 <!-- 01 -->
 ```verse
 A:?int = option{42}    # an optional containing the integer 42
 ```
-<!--verse
-}
--->
 
 If you want to represent "no value," you use the special constant `false`. This is how Verse spells the empty optional:
 
-<!--verse
-F()<decides>:void={
--->
+<!--versetest-->
 <!-- 02 -->
 ```verse
 var B:?int = false     # this optional has no element
 B = false              # still empty
 ```
-<!--verse
-}
--->
 
 To extract the element of an optional, you write `?` after the optional expression. This produces a `<decides>` expression that succeeds if the optional has an element and fails otherwise. For example:
 
-<!--verse
-F(A:?int)<decides>:void={
+<!--versetest
+A:?int = option{42}
 -->
 <!-- 03 -->
 ```verse
 S := A? + 2            # succeeds with 44 because A contains 42
 ```
-<!--verse
-}
--->
 
 If `A` had been `false`, then the attempt to use `A?` would fail and so would the whole computation. A failing case makes this clearer:
 
-<!--NoCompile-->
+<!--versetest
+B:?int = false
+-->
 <!-- 04 -->
 ```verse
-T := B? + 1            # fails, because B is false and has no element
+X := B? + 1            # Fails because B is false and has no element
 ```
 
 This shows how Verse integrates optionals tightly with the effect system: the presence or absence of a value can cause an entire computation to succeed or fail.
 
 The `option{...}` form also works in the opposite direction. When you have a computation with the `<decides>` effect, wrapping it in `option{...}` converts it to an optional. On success you get a non-empty optional; on failure you get `false`:
 
-<!--NoCompile-->
+<!--versetest
+GetAFloatOrFail()<transacts><decides>:float = 3.14
+-->
 <!-- 05 -->
 ```verse
-GetAFloatOrFail()<decides>:float = 3.14
-
 MaybeAFloat := option{GetAFloatOrFail[]}
 ```
 
@@ -72,36 +61,31 @@ This symmetry is important. The `?` operator unwraps an optional into a `<decide
 
 Although an optional value itself is immutable, you can keep one in a variable and change which optional the variable points to. The keyword `set` is used for this:
 
-<!--verse
-F()<decides>:void={
--->
+<!--versetest-->
 <!-- 06 -->
 ```verse
 var C:?int = false
 set C = option{2}      # C now refers to an optional containing 2
 C? = 2                 # succeeds, since C is not empty
 ```
-<!--verse
-}
--->
 
 This ability is useful whenever you want to track success or failure over time, such as gradually computing a result and updating the variable only when you succeed.
 
 A common use case is searching for something that may or may not be there. Imagine a function `Find` that looks through an array of integers and returns the index of the element you want. If the element exists, the function returns `option{index}`; if not, it returns `false`. The caller can then safely decide what to do:
 
-<!--NoCompile-->
+<!--versetest
+NumberArray:[]int = array{10, 20, 30}
+-->
 <!-- 07 -->
 ```verse
 Find(N:[]int, X:int):?int =
-    for (I := 0..N.Length):
+    for (I := 0..N.Length-1):
         if (N[I] = X) then return option{I}
     return false
-
-var Numbers:[]int = array{10, 20, 30}
-
-Idx:?int = Find(Numbers, 20)    # returns option{1}
-Y := Idx?                       # unwraps the optional
-# Y = 1
+    
+Idx:?int = Find(NumberArray, 20)    # returns option{1}
+Y := Idx?                           # unwraps the optional
+Y = 1
 ```
 
 Here the optional signals the possibility of failure directly in the type. The `?` operator makes it easy to use the result in an expression, while `option{...}` allows you to turn conditional computations back into optionals. The effect is that the idea of "maybe a value, maybe not" becomes a first-class part of the language, rather than an afterthought, and programmers are encouraged to handle the absence of values in a disciplined way.
@@ -114,33 +98,27 @@ The term *tuple* is a back formation from *quadruple*, *quintuple*, *sextuple*, 
 
 A tuple literal is written by enclosing a comma-separated list of expressions in parentheses. For example:
 
-<!--NoCompile-->
+<!--versetest-->
 <!-- 08 -->
 ```verse
-(1, 2, 3)
+Tuple1 := (1, 2, 3)
 ```
 
 The order of elements matters, so `(3, 2, 1)` is a completely different value. Since tuples allow mixed types, you might write:
 
-<!--NoCompile-->
+<!--versetest-->
 <!-- 09 -->
 ```verse
-(1, 2.0, "three")
+Tuple2 := (1, 2.0, "three")
 ```
 
 Tuples can also nest inside each other:
 
-<!--verse
-F():void={
-X:tuple(int,tuple(int,float,string),string)=
--->
+<!--versetest-->
 <!-- 10 -->
 ```verse
-(1, (10, 20.0, "thirty"), "three")
+X:tuple(int,tuple(int,float,string),string) = (1, (10, 20.0, "thirty"), "three")
 ```
-<!--verse
-}
--->
 
 Tuples are useful when you want to return multiple values from a function or when you want a lightweight grouping of values without the overhead of defining a struct or class. The type of a tuple is written with the `tuple` keyword followed by the types of the elements, but in most cases it can be inferred. For instance, you can write `MyTuple : tuple(int, float, string) = (1, 2.0, "three")`, or simply `MyTuple := (1, 2.0, "three")` and let the compiler deduce the type.
 
@@ -148,9 +126,7 @@ The elements of a tuple are accessed using a zero-based index operator written w
 
 Another feature of tuples is *expansion*. When a tuple is passed to a function as a single argument, its elements are automatically expanded as if the function had been called with each element separately. For example:
 
-<!--verse
-using { /Verse.org/VerseCLR }
--->
+<!--versetest-->
 <!-- 11 -->
 ```verse
 F(Arg1:int, Arg2:string):void =
@@ -173,10 +149,7 @@ Although arrays themselves are immutable, variables declared with `var` can be r
 
 Arrays are useful whenever you want to store multiple values of the same type, such as a list of players in a game: `Players:[]player = array{Player1,Player2}`. Access is by index, for example `Players[0]` is the first player. Since indexing is failable, it is often combined with `if` expressions or iteration. For instance, the following code safely prints out every element of an array:
 
-<!--verse
-using { /Verse.org/VerseCLR }
-F():void={
--->
+<!--versetest-->
 <!-- 12 -->
 ```verse
 ExampleArray : []int = array{10, 20, 30}
@@ -184,9 +157,6 @@ for (Index := 0..ExampleArray.Length - 1):
     if (Element := ExampleArray[Index]):
         Print("{Element} in ExampleArray at index {Index}")
 ```
-<!--verse
-}
--->
 
 produces
 
@@ -198,9 +168,7 @@ produces
 
 Because arrays are values, "changing" them always means replacing the old array with a new one. With `var` this feels natural, since variables can be reassigned. For example, you can concatenate arrays and then update an element:
 
-<!--verse
-F():void={
--->
+<!--versetest-->
 <!-- 13 -->
 ```verse
 Array1 : []int = array{10, 11, 12}
@@ -208,17 +176,12 @@ var Array2 : []int = array{20, 21, 22}
 set Array2 = Array1 + Array2 + array{30, 31}
 if (set Array2[1] = 77) {}
 ```
-<!--verse
-}
--->
 
 After this code runs, iterating through `Array2` prints `10, 77, 12, 20, 21, 22, 30, 31`.
 
 Arrays can also be nested to form multi-dimensional structures, similar to rows and columns of a table. For example, the following creates a two-dimensional 4×3 array of integers:
 
-<!--verse
-F():void={
--->
+<!--versetest-->
 <!-- 14 -->
 ```verse
 var Counter : int = 0
@@ -227,9 +190,6 @@ Example : [][]int =
         for (Column := 0..2):
             set Counter += 1
 ```
-<!--verse
-}
--->
 
 This array can be visualized as
 
@@ -242,9 +202,7 @@ Row 3: 10 11 12
 
 and is accessed with two indices: `Example[0][0]` is `1`, `Example[0][1]` is `2`, and `Example[1][0]` is `4`. You can loop through all rows and columns with nested iteration. Arrays in Verse are not restricted to rectangular shapes: each row can have a different length, producing a jagged structure. For example,
 
-<!--verse
-F():void={
--->
+<!--versetest-->
 <!-- 15 -->
 ```verse
 Example : [][]int =
@@ -252,15 +210,31 @@ Example : [][]int =
         for (Column := 0..Row):
             Row * Column
 ```
-<!--verse
-}
--->
 
 produces a triangular array with rows of increasing length: row 0 has none, row 1 has a single `0`, row 2 has `0, 2, 4`, and row 3 has `0, 3, 6, 9`.
 
 Nested arrays with complex initialization work naturally as class field defaults:
 
-<!--NoCompile-->
+<!--versetest
+# Game board with tile grid
+tile_class := class:
+    Position:tuple(int, int)
+    var IsOccupied:logic = false
+
+game_board := class:
+    # Initialize 10×10 grid of tiles
+    Tiles:[][]tile_class =
+        for (Y := 0..9):
+            for (X := 0..9):
+                tile_class{Position := (X, Y)}
+
+    # Get tile at specific position
+    GetTile(X:int, Y:int)<computes><decides>:tile_class =
+        Row := Tiles[Y]
+        Row[X]
+assert:
+<# 
+-->
 <!-- 16 -->
 ```verse
 # Game board with tile grid
@@ -276,7 +250,7 @@ game_board := class:
                 tile_class{Position := (X, Y)}
 
     # Get tile at specific position
-    GetTile(X:int, Y:int)<decides>:tile_class =
+    GetTile(X:int, Y:int)<computes><decides>:tile_class =
         Row := Tiles[Y]
         Row[X]
 
@@ -287,41 +261,40 @@ Board := game_board{}
 if (CenterTile := Board.GetTile[5, 5]):
     set CenterTile.IsOccupied = true
 ```
+<!--
+#>
+   Board := game_board{}
+   if (CenterTile := Board.GetTile[5, 5]):
+       set CenterTile.IsOccupied = true
+-->
 
 When you create an empty array with `array{}`, Verse infers the element type from the variable's type annotation:
 
-<!--verse
-F():void={
--->
+<!--versetest-->
 <!-- 17 -->
 ```verse
 IntArray : []int = array{}       # Empty array of integers
 FloatArray : []float = array{}   # Empty array of floats
 ```
-<!--verse
-}
--->
 
 Without a type annotation, the compiler cannot determine what type of array you want, so you must either provide the type explicitly or include at least one element that establishes the type.
 
 Arrays determine their element type from the common supertype of all elements. When you create an array with values of different but related types, Verse finds the most specific type that encompasses all elements:
 
-<!--NoCompile-->
-<!-- 18 -->
-```verse
+<!--versetest
 class1 := class {}
 class2 := class(class1) {}
 class3 := class(class1) {}
-
+-->
+<!-- 18 -->
+```verse
 # Array element type is class1 (common supertype)
 MixedArray : []class1 = array{class2{}, class3{}}
 ```
 
 This applies to any type hierarchy, including interfaces. If you mix completely unrelated types, the element type becomes `any`:
 
-<!--verse
-F():void={
--->
+<!--versetest-->
 <!-- 19 -->
 ```verse
 # Array of comparable - different types sharing comparable in common
@@ -330,9 +303,6 @@ DisjointArray : []comparable = array{42, 13.37, true}
 # Array of any - different types with no common supertype
 AnyArray : []any = array{15.61, "Message", void}
 ```
-<!--verse
-}
--->
 
 ### From Tuples to Arrays
 
@@ -340,9 +310,7 @@ Verse provides automatic conversion between tuples and arrays in specific contex
 
 Tuples can be directly assigned to array variables when all tuple elements are compatible with the array's element type:
 
-<!--verse
-F()<decides><transacts>:void={
--->
+<!--versetest-->
 <!-- 20 -->
 ```verse
 # Homogeneous tuple to array
@@ -351,18 +319,16 @@ Y:[]int = X            # Valid - both elements are int
 Y[1] = 2               # Can use as normal array
 
 # Longer tuples work too
-Numbers:tuple(int, int, int, int) = (1, 2, 3, 4)
-NumberArray:[]int = Numbers
+NumTuple:tuple(int, int, int, int) = (1, 2, 3, 4)
+NumberArray:[]int = NumTuple
 NumberArray.Length = 4
 ```
-<!--verse
-}
--->
 
 This conversion creates an array containing all the tuple's elements in order.
 
 When a function has a single array parameter, you can call it with multiple arguments, which automatically form an array:
 
+<!--versetest-->
 <!-- 21 -->
 ```verse
 ProcessNumbers(Numbers:[]int):int = Numbers.Length
@@ -376,23 +342,36 @@ ProcessNumbers(Values)             # Tuple variable → array
 
 This "variadic-like" syntax provides convenience while keeping the function signature simple:
 
+<!--versetest-->
 <!-- 22 -->
 ```verse
-Sum(Numbers:[]int):int =
+Sum(Nums:[]int):int =
     var Total:int = 0
-    for (N : Numbers):
+    for (N : Nums):
         set Total += N
     Total
 
-# All these work:
 Sum(1, 2, 3, 4)                   # Returns 10
-Sum((5, 6))                        # Returns 11
+Sum((5, 6))                       # Returns 11
 Values := (10, 20, 30)
-Sum(Values)                        # Returns 60
+Sum(Values)                       # Returns 60
 ```
 
 Array conversion only succeeds when **all tuple elements are compatible** with the array's element type:
 
+<!--versetest
+F(X:[]int):int = X.Length
+entity := class:
+    ID:int
+
+player := class(entity):
+    Name:string
+
+ProcessEntities(E:[]entity):int = E.Length
+GetP()<transacts>:player = player{ID := 1, Name := "Alice"}
+GetE()<transacts>:entity = entity{ID := 2}
+<#
+-->
 <!-- 23 -->
 ```verse
 # Homogeneous tuple - all int
@@ -412,9 +391,11 @@ P := player{ID := 1, Name := "Alice"}
 E := entity{ID := 2}
 ProcessEntities(P, E)             # Valid - player is subtype of entity
 ```
+<!-- #> -->
 
 Functions taking `[]any` accept **any tuple**, regardless of element types:
 
+<!--versetest-->
 <!-- 24 -->
 ```verse
 GetLength(Items:[]any):int = Items.Length
@@ -429,6 +410,25 @@ This enables generic functions that work with heterogeneous data.
 
 When tuple elements share a common supertype (via inheritance or interface), they convert to an array of that supertype:
 
+<!--versetest
+interface1 := interface:
+    GetID():int
+
+class1 := class(interface1):
+    GetID<override>():int = 1
+
+class2 := class(interface1):
+    GetID<override>():int = 2
+
+ProcessInterfaces(Items:[]interface1):int = Items.Length
+
+assert:
+    X:class1 = class1{}
+    Y:class2 = class2{}
+    # Valid - both classes implement interface1
+    ProcessInterfaces(X, Y) = 2
+<#
+-->
 <!-- 25 -->
 ```verse
 interface1 := interface:
@@ -448,6 +448,7 @@ Y:class2 = class2{}
 # Valid - both classes implement interface1
 ProcessInterfaces(X, Y)           # Returns 2
 ```
+<!-- #> -->
 
 The compiler finds the most specific common supertype and uses it for the array element type.
 
@@ -455,13 +456,14 @@ Tuple-to-array conversion works with nested structures:
 
 **Nested arrays:**
 
+<!--versetest
+ProcessMatrix(Matrix:[][]int):int = Matrix.Length
+-->
 <!-- 26 -->
 ```verse
-ProcessMatrix(Matrix:[][]int):int = Matrix.Length
-
 # Nested tuples → nested arrays
-Matrix := ((1, 2), (3, 4))
-ProcessMatrix(Matrix)             # Valid
+MatrixData := ((1, 2), (3, 4))
+ProcessMatrix(MatrixData)             # Valid
 
 # Or with explicit nesting
 ProcessMatrix((1, 2), (3, 4))   # Valid
@@ -469,6 +471,7 @@ ProcessMatrix((1, 2), (3, 4))   # Valid
 
 **Optional arrays:**
 
+<!--versetest-->
 <!-- 27 -->
 ```verse
 ProcessOptional(Items:?[]int)<decides>:int = Items?[0]
@@ -480,6 +483,7 @@ ProcessOptional[Values]           # Valid
 
 **Tuples containing arrays:**
 
+<!--versetest-->
 <!-- 28 -->
 ```verse
 ProcessComplex(Data:tuple([]int, int)):int = Data(0).Length
@@ -494,48 +498,41 @@ Arrays support slicing operations through the `.Slice` method, which extracts a 
 
 The two-parameter form `Array.Slice[Start, End]` returns elements from index `Start` up to but not including index `End`:
 
-<!--verse
-F()<decides><transacts>:void={
--->
+<!--versetest-->
 <!-- 29 -->
 ```verse
 Numbers : []int = array{10, 20, 30, 40, 50}
 if (Slice := Numbers.Slice[1, 4]):
-    # Slice is array{20, 30, 40}
+    Slice = array{20, 30, 40}
 ```
-<!--verse
-}
--->
 
 The one-parameter form `Array.Slice[Start]` returns all elements from `Start` to the end:
 
-<!--verse
-F()<decides><transacts>:void={
+<!--versetest
 Numbers : []int = array{10, 20, 30, 40, 50}
 -->
 <!-- 30 -->
 ```verse
 if (Slice := Numbers.Slice[2]):
-    # Slice is array{30, 40, 50}
+    Slice = array{30, 40, 50}
 ```
-<!--verse
-}
--->
 
 Slicing fails if indices are negative, out of bounds, or if `Start` is greater than `End`. Creating an empty slice is valid when `Start` equals `End`:
 
-<!--NoCompile-->
+<!--versetest
+NumArray:[]int = array{10, 20, 30, 40, 50}
+-->
 <!-- 31 -->
 ```verse
-Numbers.Slice[2, 2]  # Succeeds with array{}
-Numbers.Slice[2, 1]  # Fails - Start > End
-Numbers.Slice[-1, 2] # Fails - negative index
-Numbers.Slice[0, 10] # Fails - End beyond array length
+NumArray.Slice[2, 2]  # Succeeds with array{}
+# NumArray.Slice[2, 1]  # Would fail - Start > End
+# NumArray.Slice[-1, 2] # Would fail - negative index
+# NumArray.Slice[0, 10] # Would fail - End beyond array length
 ```
 
 Slicing also works on strings and character tuples, returning a string:
 
-<!--NoCompile-->
+<!--versetest-->
 <!-- 32 -->
 ```verse
 "hello".Slice[1, 4] = "ell"
@@ -550,23 +547,19 @@ The `Find()` method searches for the first occurrence of an element and returns 
 <!--NoCompile-->
 <!-- 33 -->
 ```verse
-# Signature
 Array.Find(Element:t)<decides>:int
 ```
 
-<!--verse
-using { /Verse.org/VerseCLR }
-F()<decides>:void={
--->
+<!--versetest-->
 <!-- 34 -->
 ```verse
-Numbers := array{1, 2, 3, 1, 2, 3}
+NumArray := array{1, 2, 3, 1, 2, 3}
 
-if (Index := Numbers.Find[2]):
+if (Index := NumArray.Find[2]):
     # Index is 1 (first occurrence)
     Print("Found at index {Index}")
 
-if (not Numbers.Find[0]):
+if (not NumArray.Find[0]):
     # Element not in array
     Print("Not found")
 
@@ -576,9 +569,6 @@ Strings := array{"Apple", "Orange", "Strawberry"}
 if (Index := Strings.Find["Strawberry"]):
     Print("Found at {Index}") # Prints "Found at 2"
 ```
-<!--verse
-}
--->
 
 `Find()` returns the first found index on success (`int`), or fails if the element was not found, enabling safe handling of missing elements without exceptions or special sentinel values.
 
@@ -587,144 +577,147 @@ if (Index := Strings.Find["Strawberry"]):
 <!--NoCompile-->
 <!-- 35 -->
 ```verse
-# Signature
 Array.RemoveFirstElement(Element:t)<decides>:[]t
 ```
 
-<!--verse
-using { /Verse.org/VerseCLR }
-F()<decides>:void={
--->
+<!--versetest0-->
 <!-- 36 -->
 ```verse
-Numbers := array{1, 2, 3, 1, 2, 3}
+NumArray := array{1, 2, 3, 1, 2, 3}
 
-if (Updated := Numbers.RemoveFirstElement[2]):
+if (Updated := NumArray.RemoveFirstElement[2]):
     # Updated is array{1, 3, 1, 2, 3}
     Print("Removed first 2")
 
-if (not Numbers.RemoveFirstElement[0]): 
+if (not NumArray.RemoveFirstElement[0]):
     # Element not found
     Print("Element not in array")
 ```
-<!--verse
-}
--->
 
 `RemoveAllElements()` removes all occurrences:
 
-<!--NoCompile-->
+<!--versetest-->
 <!-- 37 -->
 ```verse
-# Signature
-Array.RemoveAllElements(Element:t):[]t
-
-Numbers := array{1, 2, 3, 1, 2, 3}
-Updated := Numbers.RemoveAllElements[2]
-# Updated is array{1, 3, 1, 3}
+NumArray := array{1, 2, 3, 1, 2, 3}
+Updated := NumArray.RemoveAllElements(2)
+Updated = array{1, 3, 1, 3}
 
 # Returns unchanged array if element not found
-Same := Numbers.RemoveAllElements[0]
-# Same is array{1, 2, 3, 1, 2, 3}
+Same := NumArray.RemoveAllElements(0)
+Same = array{1, 2, 3, 1, 2, 3}
 ```
 
 `Remove()` removes element at specific position:
 
 <!--NoCompile-->
-<!-- 38 -->
+<!--00-->
 ```verse
 # Signature
-Array.Remove(Index:int)<decides>:[]t
+Array.Remove(From:int, To:int)<decides>:[]t
+```
 
-Numbers := array{10, 20, 30, 40}
+<!--versetest-->
+<!-- 38 -->
+```verse
+NumArray := array{10, 20, 30, 40}
 
-if (Updated := Numbers.Remove[1]):
+if (Updated := NumArray.Remove[1,1]):
     # Updated is array{10, 30, 40}
 
-if (not Numbers.Remove[-1]):
-    # Negative index fails
+# Negative index would fail
+# if (not Numbers.Remove[-1,0]):
 
-if (not Numbers.Remove[10]):
-    # Out of bounds fails
+# Out of bounds would fail
+# if (not Numbers.Remove[6,10]):
 ```
 
 `ReplaceFirstElement()` replace first occurrence:
 
 <!--NoCompile-->
-<!-- 39 -->
+<!-- 00 -->
 ```verse
 # Signature
 Array.ReplaceFirstElement(OldValue:t, NewValue:t)<decides>:[]t
+```
 
-Numbers := array{1, 2, 3, 1, 2, 3}
+<!--versetest-->
+<!-- 39 -->
+```verse
+NumArray := array{1, 2, 3, 1, 2, 3}
 
-if (Updated := Numbers.ReplaceFirstElement[2, 99]):
+if (Updated := NumArray.ReplaceFirstElement[2, 99]):
     # Updated is array{1, 99, 3, 1, 2, 3}
 
-if (not Numbers.ReplaceFirstElement[0, 99]):
+if (not NumArray.ReplaceFirstElement[0, 99]):
     # Element not found - fail
 ```
 
 `ReplaceAllElements()` replace all occurrences:
 
 <!--NoCompile-->
-<!-- 40 -->
+<!-- 00 -->
 ```verse
 # Signature
 Array.ReplaceAllElements(OldValue:t, NewValue:t):[]t
+```
 
-Numbers := array{1, 2, 3, 1, 2, 3}
-Updated := Numbers.ReplaceAllElements[2, 99]
+<!--versetest-->
+<!-- 40 -->
+```verse
+NumArray := array{1, 2, 3, 1, 2, 3}
+Updated := NumArray.ReplaceAllElements(2, 99)
 # Updated is array{1, 99, 3, 1, 99, 3}
 
 # Returns unchanged array if element not found
-Same := Numbers.ReplaceAllElements[0, 99]
+Same := NumArray.ReplaceAllElements(0, 99)
 # Same is array{1, 2, 3, 1, 2, 3}
 ```
 
 `ReplaceElement()` replaces at specific index:
 
 <!--NoCompile-->
-<!-- 41 -->
+<!-- 00 -->
 ```verse
 # Signature
 Array.ReplaceElement(Index:int, NewValue:t)<decides>:[]t
+```
 
-Numbers := array{10, 20, 30, 40}
+<!--versetest-->
+<!-- 41 -->
+```verse
+NumArray := array{10, 20, 30, 40}
 
-if (Updated := Numbers.ReplaceElement[1, 99]):
+if (Updated := NumArray.ReplaceElement[1, 99]):
     # Updated is array{10, 99, 30, 40}
 
-if (not Numbers.ReplaceElement[-1, 99]):
+if (not NumArray.ReplaceElement[-1, 99]):
     # Negative index fails
 
-if (not Numbers.ReplaceElement[10, 99]):
+if (not NumArray.ReplaceElement[10, 99]):
     # Out of bounds fails
 ```
 
 `ReplaceAll()` is a pattern-based replacement:
 
-<!--NoCompile-->
+<!--versetest-->
 <!-- 42 -->
 ```verse
-# Signature
-Array.ReplaceAll(Pattern:[]t, Replacement:[]t):[]t
-
-Numbers := array{1, 2, 3, 4, 2, 3, 5}
+NumArray := array{1, 2, 3, 4, 2, 3, 5}
 Pattern := array{2, 3}
 Replacement := array{99}
-Updated := Numbers.ReplaceAll[Pattern, Replacement]
-# Updated is array{1, 99, 4, 99, 5}
+Updated := NumArray.ReplaceAll(Pattern, Replacement)
+Updated = array{1, 99, 4, 99, 5}
 
 # Works with different length patterns
-Numbers2 := array{1, 2, 2, 1, 2, 2, 1}
-Updated2 := Numbers2.ReplaceAll[array{2, 2}, array{9, 9, 9}]
-# Updated2 is array{1, 9, 9, 9, 1, 9, 9, 9, 1}
+NumArray2 := array{1, 2, 2, 1, 2, 2, 1}
+Updated2 := NumArray2.ReplaceAll(array{2, 2}, array{9, 9, 9})
+Updated2 = array{1, 9, 9, 9, 1, 9, 9, 9, 1}
 
 # Strings are []char
 SomeMessage := "Hey, this is a string, Hello!"
 NewMessage := SomeMessage.ReplaceAll("He", "Apples") # Note: Case sensitive!
-# NewMessage is "Applesy, this is a string, Applesllo!"
+NewMessage = "Applesy, this is a string, Applesllo!"
 ```
 
 `ReplaceAll()` finds contiguous subsequences matching `Pattern` and replaces each with `Replacement`. The replacement can be any length, including empty.
@@ -732,11 +725,15 @@ NewMessage := SomeMessage.ReplaceAll("He", "Apples") # Note: Case sensitive!
 `Insert()` inserts an element at a specific position:
 
 <!--NoCompile-->
-<!-- 43 -->
+<!-- 00 -->
 ```verse
 # Signature
 Array.Insert(Index:int, Element:t)<decides>:[]t
+```
 
+<!--NoCompile-->
+<!-- 43 -->
+```verse
 Numbers := array{10, 20, 40}
 
 if (Updated := Numbers.Insert[2, 30]):
@@ -770,34 +767,40 @@ Concatenate(Arrays:[]t...):[]t
 
 Unlike the `+` operator which joins two arrays, `Concatenate()` accepts zero or more arrays:
 
-<!--NoCompile-->
+<!--versetest-->
 <!-- 45 -->
 ```verse
 # Empty call returns empty array
-Empty := Concatenate()  # array{}
+Empty := Concatenate()
+Empty = array{}
 
 # Single array returns that array
-Single := Concatenate(array{1, 2, 3})  # array{1, 2, 3}
+# Single := Concatenate(array{1, 2, 3})
+# Single = array{1, 2, 3}
 
 # Two arrays
-TwoArrays := Concatenate(array{1, 2}, array{3, 4})  # array{1, 2, 3, 4}
+TwoArrays := Concatenate(array{1, 2}, array{3, 4})
+TwoArrays = array{1, 2, 3, 4}
 
 # Multiple arrays
 Many := Concatenate(array{1}, array{2, 3}, array{4}, array{5, 6})
-# Many is array{1, 2, 3, 4, 5, 6}
+Many = array{1, 2, 3, 4, 5, 6}
 ```
 
 Empty arrays are handled seamlessly:
 
-<!--NoCompile-->
+<!--versetest-->
 <!-- 46 -->
 ```verse
 # Empty arrays contribute nothing
-Result1 := Concatenate(array{1, 2}, array{}, array{3})  # array{1, 2, 3}
-Result2 := Concatenate(array{}, array{}, array{})       # array{}
+Result1 := Concatenate(array{1, 2}, array{}, array{3})
+Result1 = array{1, 2, 3}
+Result2 := Concatenate(array{}, array{}, array{})
+Result2 = array{}
 
 # Can concatenate many empty arrays
-EmptyResult := Concatenate(for (I := 0..100): array{})  # array{}
+# EmptyResult := Concatenate(for (I := 0..100): array{})
+# EmptyResult = array{}
 ```
 
 `Concatenate()` shines when combining arrays generated dynamically:
@@ -815,8 +818,7 @@ Flattened := Concatenate(Chunks)
 
 **Comparison with `+` operator:**
 
-<!--verse
-F():void={
+<!--versetest
 -->
 <!-- 48 -->
 ```verse
@@ -829,11 +831,8 @@ Result1 := A1 + A2 + A3  # Works but requires multiple operations
 # Using Concatenate (variadic)
 Result2 := Concatenate(A1, A2, A3)  # Single operation
 
-# Result1 = Result2 = array{1, 2, 3, 4, 5, 6}
+Result1 = Result2
 ```
-<!--verse
-}
--->
 
 `Concatenate()` also works on strings, joining multiple strings into one:
 
@@ -862,8 +861,7 @@ A map is an immutable associative container that stores zero or more key–value
 
 Maps are useful whenever you want to store data that is naturally indexed by something other than an integer position. For example, you might want to store the weights of different objects keyed by their names:
 
-<!--verse
-F():void={
+<!--versetest
 -->
 <!-- 50 -->
 ```verse
@@ -875,28 +873,21 @@ var Weights:[string]float = map{
     "galaxy" => 500000000000.0
 }
 ```
-<!--verse
-}
--->
 
 Looking up a value in a map uses square brackets. The expression succeeds if the key is present and fails if it is not. Lookups are designed to be fast, with amortized *O(1)* time complexity:
 
-<!--verse
-F(Weights:[string]float)<decides>:void={
+<!--versetest
+Weights:[string]float = map{"ant" => 0.0001}
 -->
 <!-- 51 -->
 ```verse
 Weights["ant"]  # succeeds, since "ant" key exists in map
-Weights["car"]  # fails, the "car" key does not exist in map
+# Weights["car"] would fail
 ```
-<!--verse
-}
--->
 
 If you want to update a map stored in a variable, you use `set`. This works both for adding a new key–value pair and for changing the value of an existing key. If you try to modify a key that is not present, the operation fails:
 
-<!--verse
-F()<decides><transacts>:void={
+<!--versetest
 -->
 <!-- 52 -->
 ```verse
@@ -904,29 +895,22 @@ var Friendliness:[string]int = map{"peach" => 1000}
 
 set Friendliness["pelican"] = 17     # succeed: add a new value with the given key
 set Friendliness["peach"] += 2000    # succeed: update an existing value with the given key
-set Friendliness["tomato"] += 1000   # fail: can't update a value which key does not exist in the map
+# set Friendliness["tomato"] += 1000   # would fail: can't update a value which key does not exist
 ```
-<!--verse
-}
--->
 
 Every map also carries its size, accessible as the `Length` field:
 
-<!--verse
-F(Friendliness:[string]int)<decides>:void={
+<!--versetest
+Friendliness:[string]int = map{"peach" => 1000, "pelican" => 17}
 -->
 <!-- 53 -->
 ```verse
 Friendliness.Length = 2         # succeed: the map has 2 entries
 ```
-<!--verse
-}
--->
 
 When constructing a map with duplicate keys, only the last value is kept. This is because a map enforces uniqueness of keys, so earlier entries are silently overwritten:
 
-<!--verse
-F():void={
+<!--versetest
 -->
 <!-- 54 -->
 ```verse
@@ -937,16 +921,10 @@ WordCount:[string]int = map{
 }
 # WordCount contains only {"apple" => 2}
 ```
-<!--verse
-}
--->
 
 Maps can also be iterated over, letting you traverse all key–value pairs exactly in the order they were inserted:
 
-<!--verse
-using { /Verse.org/VerseCLR }
-F():void={
--->
+<!--versetest-->
 <!-- 55 -->
 ```verse
 ExampleMap:[string]string = map{
@@ -958,9 +936,6 @@ ExampleMap:[string]string = map{
 for (Key -> Value : ExampleMap):
     Print("{Value} in ExampleMap at key {Key}")
 ```
-<!--verse
-}
--->
 
 This produces:
 
@@ -970,6 +945,7 @@ This produces:
 
 Sometimes you want to remove an entry from a map. Since maps are immutable, "removing" means creating a new map that excludes the given key. For example, here is a function that removes an element from a `[string]int` map:
 
+<!--versetest-->
 <!-- 56 -->
 ```verse
 RemoveKeyFromMap(TheMap:[string]int, ToRemove:string):[string]int =
@@ -1009,13 +985,13 @@ Attempting to use a non-comparable type as a key results in a compile-time error
 
 Like arrays, maps infer their key and value types from the common supertype of all keys and values. When you create a map with mixed but related types, Verse finds the most specific types that encompass all keys and all values:
 
-<!--NoCompile-->
-<!-- 57 -->
-```verse
+<!--versetest
 class1 := class<unique> {}
 class2 := class<unique>(class1) {}
 class3 := class<unique>(class1) {}
-
+-->
+<!-- 57 -->
+```verse
 Instance2 := class2{}
 Instance3 := class3{}
 
@@ -1028,7 +1004,7 @@ MixedKeyMap : [class1]int = map{Instance2 => 1, Instance3 => 2}
 
 Maps preserve insertion order, which is significant for both iteration and equality checks. When you insert entries into a map, they maintain the order of insertion. Two maps are equal only if they contain the same key–value pairs **in the same order**:
 
-<!--NoCompile-->
+<!--versetest-->
 <!-- 58 -->
 ```verse
 var Scores:[string]int = map{}
@@ -1038,15 +1014,16 @@ set Scores["Carol"] = 95
 
 # This map equals Scores
 Map1 := map{"Alice" => 100, "Bob" => 90, "Carol" => 95}
+Scores = Map1
 
 # This map does NOT equal Scores - different order
 Map2 := map{"Bob" => 90, "Alice" => 100, "Carol" => 95}
+not Scores = Map2
 ```
 
 When a map literal contains duplicate keys, the last value overwrites earlier values, but the key's position remains from its **first** occurrence:
 
-<!--verse
-F():void={
+<!--versetest
 -->
 <!-- 59 -->
 ```verse
@@ -1054,9 +1031,6 @@ Map := map{0 => "zero", 1 => "one", 0 => "ZERO", 2 => "two"}
 # Equivalent to map{0 => "ZERO", 1 => "one", 2 => "two"}
 # The key 0 stays in its original position
 ```
-<!--verse
-}
--->
 
 Iteration over the map will visit entries in their preserved insertion order.
 
@@ -1064,8 +1038,7 @@ Iteration over the map will visit entries in their preserved insertion order.
 
 Empty maps can infer their key and value types from context, similar to arrays:
 
-<!--verse
-F()<transacts>:void={
+<!--versetest
 -->
 <!-- 60 -->
 ```verse
@@ -1074,9 +1047,6 @@ StringToInt : [string]int = map{}  # Empty map with inferred types
 var Scores : [string]int = map{}
 set Scores = ConcatenateMaps(Scores, map{"Alice" => 100})
 ```
-<!--verse
-}
--->
 
 Without type context, you may need to provide explicit type annotations.
 
@@ -1109,12 +1079,12 @@ The contravariance in keys reflects how maps are used: if a map can handle looku
 
 When modifying a mutable map through `set`, you can only insert keys and values that match the map's declared types:
 
-<!--NoCompile-->
-<!-- 62 -->
-```verse
+<!--versetest
 class1 := class<unique> {}
 class2 := class<unique>(class1) {}
-
+-->
+<!-- 62 -->
+```verse
 var Map : [class2]int = map{}
 Key2 : class2 = class2{}
 Key1 : class1 = Key2
@@ -1127,8 +1097,7 @@ set Map[Key2] = 1      # Succeeds - exact type match
 
 Maps can contain other maps as values, enabling multi-level associations:
 
-<!--verse
-F()<decides>:void={
+<!--versetest
 -->
 <!-- 63 -->
 ```verse
@@ -1140,11 +1109,8 @@ NestedMap : [string][int]string = map{
 
 if (InnerMap := NestedMap["numbers"]):
     if (Value := InnerMap[1]):
-        # Value is "one"
+        Value = "one"
 ```
-<!--verse
-}
--->
 
 Maps can be used as keys of other maps if all values and keys from it are comparable.
 
@@ -1174,8 +1140,7 @@ Combined := ConcatenateMaps(Map1, Map2, Map3)
 
 **Handling duplicate keys:**
 
-<!--verse
-F():void={
+<!--versetest
 -->
 <!-- 66 -->
 ```verse
@@ -1186,9 +1151,6 @@ Result := ConcatenateMaps(Base, Override)
 # Result is map{1 => "original", 2 => "updated", 3 => "new"}
 # Key 2 was overridden by the later map
 ```
-<!--verse
-}
--->
 
 The right-to-left precedence ensures that later maps take priority, enabling a natural override pattern.
 
@@ -1215,7 +1177,7 @@ Single := ConcatenateMaps(map{1 => "one"})  # map{1 => "one"}
 
 The resulting map type will coerce to the most specific shared type from the input maps:
 
-<!--verse
+<!--versetest
 SomeRatio : rational = 5 / 3
 -->
 <!-- 68 -->
@@ -1231,14 +1193,10 @@ M4 := map{"string" => "b"}
 Combined2 := ConcatenateMaps(M3, M4)  # [comparable]string
 
 # Mismatched key and value types
-# Assume `SomeRatio : rational = 5 / 3`
-M5 := map{1 => "a"},        # [int]string
-M5 := map{SomeRatio => "b"} # [rational]string
+M5 := map{1 => "a"}        # [int]string
+M6 := map{SomeRatio => "b"} # [rational]string
 Combined3 := ConcatenateMaps(M5, M6) # [rational]string
 ```
-<!--verse
-}
--->
 
 ## Weak Maps
 
@@ -1246,8 +1204,7 @@ The `weak_map` type is a specialized supertype of `map` designed for persistent 
 
 A `weak_map` is declared with `weak_map(k,v)` and can be initialized from an ordinary `map{}`. Updating and accessing individual entries works the same way as regular maps:
 
-<!--verse
-F()<decides>:void={
+<!--versetest
 -->
 <!-- 69 -->
 ```verse
@@ -1258,9 +1215,6 @@ Value := MyWeakMap[0]         # succeeds with 1
 
 set MyWeakMap = map{0 => 2}   # reassignment still works (for local variables)
 ```
-<!--verse
-}
--->
 
 Because `weak_map` is a supertype of `map`, you can assign regular maps to weak_map variables when needed, but you lose the ability to count or iterate once you are working with a weak map.
 
@@ -1409,7 +1363,20 @@ Common key types that satisfy the requirements:
 
 The `weak_map` type is **covariant** in its key type, meaning you can use a weak_map with a subclass key type where a parent class key type is expected:
 
-<!--NoCompile-->
+<!--versetest
+base_class := class<unique> {}
+derived_class := class(base_class) {}
+
+value_struct := struct {}
+
+CreateDerivedMap():weak_map(derived_class, value_struct) =
+    map{}
+
+F():void=
+    # OK: weak_map is covariant in key type
+    BaseMap:weak_map(base_class, value_struct) = CreateDerivedMap()
+<#
+-->
 <!-- 79 -->
 ```verse
 base_class := class<unique> {}
@@ -1426,10 +1393,23 @@ BaseMap:weak_map(base_class, value_struct) = CreateDerivedMap()
 # ERROR 3509: Cannot go the other way (contravariance)
 # DerivedMap:weak_map(derived_class, value_struct) = BaseMap
 ```
+<!-- #> -->
 
 This covariance also allows regular maps to be assigned to weak_maps with compatible key types:
 
-<!--NoCompile-->
+<!--versetest
+base_class := class<unique> {}
+derived_class := class(base_class) {}
+value_struct := struct {}
+
+F():void=
+    DerivedKey := derived_class{}
+    RegularMap:[derived_class]value_struct = map{DerivedKey => value_struct{}}
+
+    # OK: Regular map converts to weak_map with covariant key
+    WeakMap:weak_map(base_class, value_struct) = RegularMap
+<#
+-->
 <!-- 80 -->
 ```verse
 DerivedKey := derived_class{}
@@ -1438,6 +1418,7 @@ RegularMap:[derived_class]value_struct = map{DerivedKey => value_struct{}}
 # OK: Regular map converts to weak_map with covariant key
 WeakMap:weak_map(base_class, value_struct) = RegularMap
 ```
+<!-- #> -->
 
 ### Partial Field Updates
 
@@ -1464,7 +1445,25 @@ UpdatePlayerLevel(Player:player, NewLevel:int):void =
 
 Like all mutable state in Verse, `weak_map` updates participate in transaction semantics. If a `<decides>` expression fails, all changes are rolled back:
 
-<!--NoCompile-->
+<!--versetest
+player := class<unique> {}
+
+F():void=
+    var GameData:weak_map(player, int) = map{}
+
+    AttemptUpdate():void =
+        if:
+            set GameData[player{}] = 100
+            set GameData[player{}] = 200
+            false?  # Transaction fails
+
+        # Both updates rolled back
+        # GameData[1] still does not exist
+        # GameData[2] still does not exist
+
+    AttemptUpdate()
+<#
+-->
 <!-- 82 -->
 ```verse
 var GameData:weak_map(int, int) = map{}
@@ -1479,6 +1478,7 @@ AttemptUpdate():void =
     # GameData[1] still does not exist
     # GameData[2] still does not exist
 ```
+<!-- #> -->
 
 This applies to complete map replacements (for local variables), individual entries, and partial field updates.
 
@@ -1489,7 +1489,15 @@ This applies to complete map replacements (for local variables), individual entr
 
 There is a **limit on the number of persistent `weak_map` variables** per island. In the standard environment, this limit is 4 persistent weak_maps. Exceeding this limit produces an error:
 
-<!--NoCompile-->
+<!--versetest
+key_class := class<unique><allocates><computes><persistent><module_scoped_var_weak_map_key> {}
+value_class := class<final><persistable> {}
+
+var Map1:weak_map(key_class, int) = map{}  # OK
+var Map2:weak_map(key_class, int) = map{}  # OK
+var Map3:weak_map(key_class, value_class) = map{}  # OK - class value doesn't count
+<#
+-->
 <!-- 83 -->
 ```verse
 key_class := class<unique><allocates><computes><persistent><module_scoped_var_weak_map_key> {}
@@ -1502,10 +1510,20 @@ var Map4:weak_map(key_class, int) = map{}  # OK
 # ERROR 3502: Exceeds island limit
 # var Map5:weak_map(key_class, int) = map{}
 ```
+<!-- #> -->
 
 **Exception:** If the value type is a class (not a primitive or struct), the weak_map doesn't count toward this limit:
 
-<!--NoCompile-->
+<!--versetest
+key_class := class<unique><allocates><computes><persistent><module_scoped_var_weak_map_key> {}
+value_class := class<final><persistable> {}
+
+var Map1:weak_map(key_class, int) = map{}       # Counts (1/4)
+var Map2:weak_map(key_class, int) = map{}       # Counts (2/4)
+var Map3:weak_map(key_class, int) = map{}       # Counts (3/4)
+var Map4:weak_map(key_class, value_class) = map{}  # Doesn't count (class value)
+<#
+-->
 <!-- 84 -->
 ```verse
 value_class := class<final><persistable> {}
@@ -1515,3 +1533,4 @@ var Map2:weak_map(key_class, int) = map{}       # Counts (2/4)
 var Map3:weak_map(key_class, int) = map{}       # Counts (3/4)
 var Map4:weak_map(key_class, value_class) = map{}  # Doesn't count (class value)
 ```
+<!-- #> -->
