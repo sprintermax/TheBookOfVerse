@@ -8,7 +8,19 @@ The distinction between immutable and mutable data in Verse goes deeper than jus
 
 In Verse's pure fragment, computation happens without side effects. Values are created but never modified. Functions transform inputs into outputs without changing anything along the way. This isn't a limitation — it's a powerful foundation that makes code predictable and composable.
 
-<!--NoCompile-->
+<!--versetest
+point := struct{X:float, Y:float}
+Distance(P1:point, P2:point)<reads>:float =
+    DX := P2.X - P1.X
+    DY := P2.Y - P1.Y
+    Sqrt(DX * DX + DY * DY)
+
+assert:
+    Origin := point{X:=0.0, Y:=0.0}
+    UnitX := point{X := 1.0, Y:=0.0}
+    UnitY := point{X:=0.0, Y := 1.0}
+<#
+-->
 <!-- 01 -->
 ```verse
 # Immutable values and structures
@@ -26,11 +38,11 @@ Distance(P1:point, P2:point)<reads>:float =
     DY := P2.Y - P1.Y
     Sqrt(DX * DX + DY * DY)
 ```
+<!-- #> -->
 
 In this pure world, equality means structural equality — two values are equal if they have the same shape and content. For primitive types and structs, this happens automatically. For classes, which have identity beyond their content, equality requires more careful consideration.
 
-<!--verse
-using{/Verse.org/VerseCLR}
+<!--versetest
 linked_list := class:
     Value:int = 0
     Next:?linked_list = false
@@ -44,13 +56,11 @@ linked_list := class:
         else:
             not Other.Next?
 
-F():void={
-List1 := linked_list{Value := 1, Next := option{linked_list{Value := 2}}}
-List2 := linked_list{Value := 1, Next := option{linked_list{Value := 2}}}
-
-if (List1.Equals[List2]):
-    Print("Structurally equal")  
-}<#
+assert:
+    List1 := linked_list{Value := 1, Next := option{linked_list{Value := 2}}}
+    List2 := linked_list{Value := 1, Next := option{linked_list{Value := 2}}}
+    List1.Equals[List2])
+<#
 -->
 <!-- 02 -->
 ```verse
@@ -76,9 +86,7 @@ List2 := linked_list{Value := 1, Next := option{linked_list{Value := 2}}}
 if (List1.Equals[List2]):
     Print("Structurally equal")  # This succeeds
 ```
-<!--verse
-#>
--->
+<!-- #> -->
 
 Pure computation forms the backbone of functional programming in Verse. It's predictable, testable, and parallelizable. When a function is marked `<computes>`, you know it will always produce the same output for the same input, with no hidden dependencies or surprising behaviors.
 
@@ -89,12 +97,10 @@ Mutation enters through two keywords: `var` and `set`. The `var` annotation decl
 <!--versetest-->
 <!-- 03 -->
 ```verse
-# Immutable variable - cannot be reassigned
-Score:int = 100
-
-# Mutable variable - can be reassigned 
+Score:int = 100   # Immutable variable - cannot be reassigned
+                  # Mutable variable - can be reassigned 
 var Health:float = 100.0       # type annotation is required
-set Health = 75.0  # Allowed
+set Health = 75.0              # Allowed
 ```
 
 Every use of `var` and `set` has implications for effects. Reading from a `var` variable requires the `<reads>` effect. Using `set` requires both `<reads>` and `<writes>` effects. This isn't bureaucracy — it's transparency. The effects make mutation visible in function signatures, so callers know when functions might observe or modify state.
@@ -112,7 +118,7 @@ Mutable variable declarations have strict requirements that prevent common error
 var X:int = 0
 
 # Invalid - cannot use := syntax with var
-# var X := 0  # ERROR 3515
+# var X := 0  # Error
 ```
 
 The type inference syntax `:=` cannot be used with `var`. You must explicitly declare the type.
@@ -126,18 +132,25 @@ The type inference syntax `:=` cannot be used with `var`. You must explicitly de
 var Health:float = 100.0
 
 # Invalid - no initial value
-# var Score:int  # ERROR 3601
+# var Score:int  # Error
 ```
 
 Every `var` declaration requires an initial value. Uninitialized mutable variables are not allowed.
 
 **Cannot be completely untyped:**
 
+<!--versetest
+assert_semantic_error(3502):
+    F():void=
+        var X
+<#
+-->
 <!-- 06 -->
 ```verse
 # Invalid - neither type nor value
-# var X  # ERROR 3502
+# var X  
 ```
+<!-- #> -->
 
 ### var Declarations as Expressions
 
@@ -152,11 +165,18 @@ X = 42
 
 However, `var` declarations **cannot be the target of `set`**:
 
+<!--versetest
+assert_semantic_error(3509):
+    F():void=
+        set (var Z:int = 0) = 1
+<#
+-->
 <!-- 08 -->
 ```verse
 # Invalid
-# set (var Z:int = 0) = 1  # ERROR 3509
+# set (var Z:int = 0) = 1  # Error
 ```
+<!-- #> -->
 
 The `var` keyword declares a new mutable variable; you cannot assign to the declaration itself.
 
@@ -174,8 +194,7 @@ set X = block:
     set Y = X      # Side effect: Y becomes 0
     2              # Block result: X becomes 2
 
-X = 2
-Y = 0
+X = 2 and Y = 0
 ```
 
 This pattern is useful when the new value requires intermediate computations or when you need multiple side effects during assignment.
@@ -192,14 +211,13 @@ Variables cannot be redeclared with `:=` once they exist in scope:
 var X:int = 0
 
 # Invalid - X already exists
-# X := 1  # ERROR
+# X := 1  # Error
 ```
 
 This applies even in conditional branches:
 
 <!--versetest
 SomeCondition:logic=false
-
 -->
 <!-- 11 -->
 ```verse
@@ -207,7 +225,7 @@ var A:int = 1
 
 if (SomeCondition?):
     # Invalid - A already declared in outer scope
-    # A := 2  # ERROR 3653
+    # A := 2  # Error
 ```
 
 **Cannot redeclare with assignment syntax:**
@@ -242,20 +260,23 @@ Verse's approach to mutability differs significantly between structs and classes
 
 When you declare a struct variable with `var`, you're declaring the entire structure as mutable — the variable itself and all its nested fields, recursively. This deep mutability means you can modify any part of the structure tree.
 
-<!--verse
-point:=struct<computes>{X:float=100.0}
+<!--versetest
+point:=struct<computes>{X:float, Y:float}
 player_stats := struct<computes>:
     Level:int = 1
-    Position:point = point{}
+    Position:point = point{X:=0.0, Y:=0.0}
     Inventory:[]string = array{}
 
-f():void={
-Stats1:player_stats = player_stats{}
-var Stats2:player_stats = player_stats{}
-set Stats2.Level = 2  # OK
-set Stats2.Position.X = 100.0  # OK - nested fields are mutable
-set Stats2.Inventory = Stats2.Inventory + array{"Sword"}  # OK
-}<#
+assert:
+    Stats1:player_stats = player_stats{}
+    var Stats2:player_stats = player_stats{}
+    set Stats2.Level = 2
+    Stats2.Level = 2
+    set Stats2.Position.X = 100.0
+    Stats2.Position.X = 100.0
+    set Stats2.Inventory = Stats2.Inventory + array{"Sword"}
+    Stats2.Inventory = array{"Sword"}
+<#
 -->
 <!-- 14 -->
 ```verse
@@ -274,9 +295,7 @@ set Stats2.Level = 2  # OK
 set Stats2.Position.X = 100.0  # OK - nested fields are mutable
 set Stats2.Inventory = Stats2.Inventory + array{"Sword"}  # OK
 ```
-<!--
-#>
--->
+<!-- #> -->
 
 When you assign one struct variable to another, Verse performs a deep copy. The two variables become independent, each with their own copy of the data. Changes to one don't affect the other.
 
@@ -294,7 +313,7 @@ var Original:player_stats = player_stats{Level := 5}
 var Copy:player_stats = Original
 
 set Copy.Level = 10
-# Original.Level is still 5 - they're independent copies
+Original.Level = 5   # unchanged, they're independent copies
 ```
 
 This deep-copy semantics extends to all value types: structs, arrays, maps, and tuples. When you pass a struct to a function, the function receives its own copy. When you store a struct in a container, the container holds a copy. This prevents aliasing and makes reasoning about struct mutations local and predictable.
@@ -303,19 +322,22 @@ This deep-copy semantics extends to all value types: structs, arrays, maps, and 
 
 Classes behave differently. They have reference semantics — when you assign a class instance, you're sharing a reference to the same object, not creating a copy. The `var` annotation on a class variable only affects whether that variable can be reassigned to reference a different object. It doesn't affect the mutability of the object's fields.
 
-<!--verse
+<!--versetest
 game_character := class:
     Name:string = "Hero"
-    var Health:float = 100.0  # This field is always mutable
-    MaxHealth:float = 100.0   # This field is always immutable
-F():void={
-Player1:game_character = game_character{}
-set Player1.Health = 50.0  # OK: Health field is mutable
+    var Health:float = 100.0
+    MaxHealth:float = 100.0
 
-var Player2:game_character = Player1  # Same object
-set Player2 = game_character{Name := "Villain"}  # OK: Can reassign
-set Player2.Health = 75.0  # OK: Modifies the new object
-}<#
+assert:
+    Player1:game_character = game_character{}
+    set Player1.Health = 50.0
+    Player1.Health = 50.0
+    var Player2:game_character = Player1
+    set Player2 = game_character{Name := "Villain"}
+    Player2.Name = "Villain"
+    set Player2.Health = 75.0
+    Player2.Health = 75.0
+<#
 -->
 <!-- 16 -->
 ```verse
@@ -337,36 +359,33 @@ set Player2.Health = 75.0  # OK: Modifies the new object
 # Player1 and the original Player2 reference were the same object
 # After reassignment, Player2 references a different object
 ```
-<!--
-#>
--->
+<!-- #> -->
 
 The key insight: for classes, field mutability is determined at class definition time, not at variable declaration time. A `var` field is always mutable, regardless of how you access it. A non-`var` field is always immutable, even if accessed through a `var` variable.
 
-<!--verse
-point:=struct{X:float=1.0}
+<!--versetest
+point:=struct<computes>{X:float}
 container := class:
-    ImmutableData:point= point{}  # Always immutable
-    var MutableData:int = 0  # Always mutable
-f():void={
-Box:container = container{}
-set Box.MutableData = 42  # Allowed
-}<#
+    ImmutableData:point= point{X:=1.0}
+    var MutableData:int = 0
+assert:
+    Box:container = container{}
+    set Box.MutableData = 42
+    Box.MutableData = 42
+<#
 -->
 <!-- 17 -->
 ```verse
 container := class:
     ImmutableData:point= point{}  # Always immutable
-    var MutableData:int = 0  # Always mutable
+    var MutableData:int = 0       # Always mutable
 
 # Even through an immutable variable, mutable fields can change
 Box:container = container{}
-set Box.MutableData = 42  # Allowed
+set Box.MutableData = 42         # Allowed
 # set Box.ImmutableData = Point{X := 1.0}  # ERROR: Field is immutable
 ```
-<!--
-#>
--->
+<!-- #> -->
 
 ### Collection Mutability: Arrays and Maps
 
@@ -392,7 +411,7 @@ Numbers[0] = 42
 Numbers[1] = 666
 ```
 
-**Important**: You cannot add elements beyond the array's current length:
+You cannot add elements beyond the array's current length:
 
 <!--versetest-->
 <!-- 19 -->
@@ -422,7 +441,7 @@ var Config:[string]int = map{"volume" => 50}
 set Config["brightness"] = 75
 ```
 
-**Important**: Looking up a non-existent key doesn't add it:
+Looking up a non-existent key doesn't add it:
 
 <!--versetest-->
 <!-- 21 -->
@@ -566,7 +585,7 @@ set M[0].AM = 30
 M[0].AM = 30
 ```
 
-**But note**: The map constructed from a `var` doesn't track changes to the source variable:
+The map constructed from a `var` doesn't track changes to the source variable:
 
 <!--versetest-->
 <!-- 28 -->
@@ -711,13 +730,18 @@ T0(1) = 40
 
 **Cannot mutate elements:**
 
-<!--NoCompile-->
+<!--versetest
+assert_semantic_error(3509):
+        var T0:tuple(int, int) = (50, 60)
+        set T0(0) = 70
+<#
+-->
 <!-- 34 -->
 ```verse
-# ERROR 3509:
 var T0:tuple(int, int) = (50, 60)
 set T0(0) = 70  # ERROR: Cannot mutate tuple elements
 ```
+<!-- #> -->
 
 This restriction applies even when the tuple is mutable. You must replace the entire tuple to change its contents.
 
@@ -787,17 +811,26 @@ Verse imposes several important restrictions on where and how mutation can occur
 
 Classes might contain unique pointers or other resources that cannot be safely cloned. Therefore, you cannot mutate immutable fields of a class instance:
 
-<!--NoCompile-->
+<!--versetest
+assert_semantic_error(3509):
+    classX := class:
+        AI:int = 20
+
+    F()<transacts>:void=
+        CX:classX = classX{}
+        set CX.AI = 30
+<#
+-->
 <!-- 38 -->
 ```verse
-# ERROR 3509:
 classX := class:
     AI:int = 20  # Immutable field
 
 CX:classX = classX{}
 CX.AI = 20
-set CX.AI = 30  # ERROR 3509: Cannot mutate immutable class field
+set CX.AI = 30  # Error: Cannot mutate immutable class field
 ```
+<!-- #> -->
 
 This restriction applies even when the class instance itself is immutable. Only `var` fields of classes can be mutated.
 
@@ -832,10 +865,21 @@ This restriction ensures that only predictable, effect-free structs can be mutat
 
 When mutating nested structures, you cannot have an immutable class in the "middle" of the path:
 
-<!--NoCompile-->
+<!--versetest
+assert_semantic_error(3509):
+    inner_struct := struct<computes>{Value:int = 0}
+    immutable_class := class:
+        Field:inner_struct = inner_struct{}
+    outer_struct := struct<computes>:
+        C:immutable_class
+
+    F()<transacts>:void=
+        var S:outer_struct = outer_struct{C := immutable_class{}}
+        set S.C.Field.Value = 10
+<#
+-->
 <!-- 41 -->
 ```verse
-# ERROR 3509:
 struct0 := struct<computes>{A:int = 10}
 struct1 := struct<computes>{S0:struct0 = struct0{}}
 class0 := class{CI:struct1 = struct1{}}  # Immutable class
@@ -843,8 +887,9 @@ struct2 := struct<computes>{C0:class0 = class0{}}
 struct3 := struct<computes>{S2:struct2 = struct2{}}
 
 var S3:[]struct3 = array{struct3{}, struct3{}}
-set S3[1].S2.C0.CI.S0.A = 7  # ERROR 3509: class0 is immutable
+set S3[1].S2.C0.CI.S0.A = 7  # ERROR: class0 is immutable
 ```
+<!-- #> -->
 
 **But** you CAN mutate through `var` members of that class.
 
@@ -868,48 +913,20 @@ var A:[]int = array{5, 6, 7}
 set A[I] = 2  # OK: A is var
 ```
 
-### Set Keyword Restrictions
-
-The `set` keyword can only appear as part of an assignment expression:
-
-<!--NoCompile-->
-<!-- 45 -->
-```verse
-# ERROR 3682: set without assignment
-var X:int = 3
-set X  # ERROR 3682: set must be part of assignment
-```
-
-<!--NoCompile-->
-<!-- 46 -->
-```verse
-# ERROR 3682: set in conditional without assignment completion
-var A:[int]int = map{}
-if (set A[4]) {}  # ERROR 3682
-```
-
-The `set` keyword must be followed by `=` or a compound assignment operator.
-
 ## Identity and Uniqueness
 
 The `<unique>` specifier gives classes identity-based equality. Without it, classes can't be compared for equality at all (you'd need to write custom comparison methods). With it, equality means identity — two references are equal only if they refer to the exact same object.
 
-<!--verse
-using { /Verse.org/VerseCLR }
+<!--versetest
 unique_item := class<unique>:
     var Count:int = 0
-
-F():void={
-Item1:unique_item = unique_item{}
-Item2:unique_item = Item1  # Same object
-Item3:unique_item = unique_item{}  # Different object
-
-if (Item1 = Item2):
-    Print("Same object")  # This prints
-
-if (Item1 = Item3):
-    Print("Same object")  
-}<#
+assert:
+    Item1:unique_item = unique_item{}
+    Item2:unique_item = Item1
+    Item3:unique_item = unique_item{}
+    Item1 = Item2
+    not (Item1 = Item3)
+<#
 -->
 <!-- 47 -->
 ```verse
@@ -926,5 +943,6 @@ if (Item1 = Item2):
 if (Item1 = Item3):
     Print("Same object")  # This doesn't print - different objects
 ```
+<!-- #> -->
 
 This identity-based equality is crucial for game objects that need distinct identities even when their data is identical. Two monsters might have the same stats, but they're still different monsters.
