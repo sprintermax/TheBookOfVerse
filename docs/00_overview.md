@@ -235,7 +235,7 @@ item_stats := struct<persistable>:
     Value:int = 0
 
 # Class for game items - object-oriented features with functional constraints
-game_item := class<final><persistable>:
+game_item := class<final><unique><persistable>:
     Name:string
     Rarity:item_rarity = item_rarity.common
     Stats:item_stats = item_stats{}
@@ -248,7 +248,7 @@ game_item := class<final><persistable>:
             item_rarity.uncommon => 1.5
             item_rarity.rare => 2.0
             item_rarity.epic => 3.0
-            _ => false  # Fails if the item is legenday or unexpected
+            _ => {false?; 0.0}  # Fails if the item is legenday or unexpected
     
     # Computed property using closed-world function
     GetEffectiveValue()<transacts><decides>:int=
