@@ -94,14 +94,52 @@ Some rules:
 - All floats are 64-bit (IEEE 754 double precision); the `f64` suffix is optional
 - Unary operators work as with integers: `-1.0`, `+1.0`
 
-Float literals must fit within IEEE 754 double-precision range or produce compile-time errors:
+**Overflow and Underflow Behavior:**
+
+Float literals outside the IEEE 754 double-precision range produce
+**compile-time errors**:
 
 <!--versetest-->
 <!-- 06 -->
 ```verse
-#TooBig := 1.7976931348623159e+308    # ERROR: Overflow
-Maximum := 1.7976931348623158e+308    # OK: Maximum float
+#TooBig := 1.7976931348623159e+308    # Compile error: literal overflow
+Maximum := 1.7976931348623158e+308    # OK: Maximum finite float
 ```
+
+However, **runtime** float arithmetic follows standard IEEE 754 semantics:
+
+<!--versetest
+assert:
+    # Runtime overflow produces infinity
+    Large := 1.0e308
+    Overflow := Large * 10.0
+    not(Overflow = Large)  # Now infinity
+
+    # Division by zero produces infinity
+    PosInf := 1.0 / 0.0
+    NegInf := -1.0 / 0.0
+    true
+
+    # Underflow produces denormalized numbers or zero
+    Small := 1.0e-320
+    Smaller := Small / 1.0e10
+    Smaller >= 0.0  # Denorm or zero, not an error
+-->
+```verse
+# Runtime overflow → infinity (not an error)
+Large := 1.0e308
+Overflow := Large * 10.0    # Produces infinity
+
+# Runtime underflow → denormalized number or zero (not an error)
+Small := 1.0e-320
+Smaller := Small / 1.0e10   # Underflows gracefully
+
+# Division by zero → infinity (not an error for floats)
+Inf := 1.0 / 0.0            # Positive infinity
+```
+
+**Note:** Operations that would produce NaN (like `0.0 / 0.0` or `Inf - Inf`)
+cause runtime errors rather than producing NaN values.
 
 
 
@@ -336,8 +374,14 @@ Path literals are covered in detail in the Modules chapter.
 ### Identifiers and References
 
 Identifiers serve as references to values, whether they're constants,
-variables, functions, or types. The language doesn't syntactically
-distinguish between these different kinds of identifiers:
+variables, functions, or types. An identifier consists of:
+
+- **First character:** Letter (A-Z, a-z) or underscore (`_`)
+- **Subsequent characters:** Letters, digits (0-9), or underscores
+- **Reserved:** Single underscore `_` cannot be used as an identifier
+
+Identifiers are case-sensitive and use only ASCII characters—Unicode
+characters are not supported in identifiers.
 
 <!--NoCompile-->
 <!-- 22 -->
@@ -346,7 +390,19 @@ int               # Reference to the int type
 GetValue          # Reference to a function
 Counter           # Reference to a variable
 my_class          # Reference to a class
+_private          # Leading underscore allowed
+variable123       # Digits allowed after first character
+
+# Invalid identifiers:
+# 123invalid      # Cannot start with digit
+# my-variable     # Hyphen not allowed
+# café            # Unicode not supported
+# _               # Single underscore is reserved
 ```
+
+The language doesn't syntactically distinguish between different kinds
+of identifiers (types, functions, variables)—the context determines how
+each identifier is used.
 
 ### Parentheses and Grouping
 
@@ -484,9 +540,25 @@ Data[ComputeIndex()]    # Dynamic index computation
 ```
 <!-- #> -->
 
-The function call syntax with square brackets, `Func[]` is equivalent
-to `Func()` for functions that may fail. Array indexing can fail, if
-the index is out of bounds, and thus uses `[]`.
+**Important:** The square bracket syntax `Func[]` is **required** for calling
+functions that may fail (those with the `<decides>` effect). Regular
+parentheses `Func()` are used for functions that always succeed. Array
+indexing also uses `[]` because it can fail when the index is out of bounds.
+
+```verse
+GetValue()<decides>:int = ...
+GetData():int = ...
+
+# Must use [] for functions that may fail
+if (X := GetValue[]):
+    Print("Got: {X}")
+
+# Must use () for functions that always succeed
+Y := GetData()
+
+# ERROR: Cannot use () for failable functions
+# Z := GetValue()  # Compile error!
+```
 
 ### Function Calls
 
@@ -673,7 +745,18 @@ loop {
 
 The loop construct can use indented syntax for clarity.
 
-<!-- # TODO What is the value of a loop? -->
+A loop expression produces a value of type `true` (the
+top type in Verse's type system), regardless of what expressions appear in
+its body. This value is currently not useful for practical purposes—you
+typically use loops for their side effects rather than their return value.
+
+```verse
+Result := loop:
+    ProcessData()
+    if (ShouldStop[]):
+        break
+# Result has type 'true' (and returns `true`)
+```
 
 ### Case
 
@@ -853,6 +936,32 @@ or failure into a value:
 Condition := logic{ExpA and ExpB or ExpC and ExpD}
 ```
 
+**Important:** Variable bindings do not escape from logical operations.
+When you use `:=` inside `and`, `or`, or `not` expressions, those
+bindings are only evaluated for short-circuit control flow and are **not**
+accessible afterward:
+
+<!--versetest
+assert:
+    Arr1 := array{10, 20}
+    Arr2 := array{30, 40}
+    # This compiles but X and Y are not accessible in the then branch
+    if ((X := Arr1[0]) and (Y := Arr2[0])):
+        # X and Y are NOT accessible here
+        true
+-->
+```verse
+# Bindings in logical operations are NOT accessible
+if ((X := Arr[0]) and (Y := Arr[1])):
+    # ERROR: X and Y are not bound here
+    Z := X + Y
+
+# Simple if binding DOES work
+if (X := Arr[0]):
+    # OK: X is accessible here
+    Y := X + 1
+```
+
 ### Comparison Operations
 
 Comparison operators also either succeed or fail and can be chained
@@ -876,19 +985,39 @@ Different := logic{A <> B}
 ```
 
 All comparison operators have the same precedence and are evaluated
-left-to-right. **Importantly, comparison operators return their left
-operand** when the comparison succeeds, which enables natural chaining for
-range checks:
+**left-to-right**. Crucially, *comparison operators return their left
+operand* when the comparison succeeds, and *comparison chains have special
+syntax* that checks all adjacent pairs.
 
+<!--versetest
+assert:
+    X := 0 < 10
+    X = 0  # Returns left operand (0)
+
+    Value:int = 50
+    Result := 0 <= Value <= 100
+    Result = 0  # Chain returns leftmost operand (0)
+
+    # Chain checks BOTH comparisons
+    Value2:int = 75
+    not(10 <= Value2 <= 50)  # Fails because 75 > 50
+-->
+<!--NoCompile-->
 ```verse
+X := 0 < 10
+# X equals 0 (the left operand)
+
 0 <= Value <= 100
-# Evaluates as: (0 <= Value) <= 100
-# First: 0 <= Value succeeds and returns Value
-# Then: Value <= 100 is checked
+# Special chain syntax that checks BOTH:
+#   - 0 <= Value (lower bound)
+#   - Value <= 100 (upper bound)
+# Returns 0 (leftmost operand) if both succeed
 ```
 
-This behavior allows mathematical notation for ranges without requiring
-`and` operators.
+The comparison chain `A <= B <= C` is **not** evaluated as `(A <= B) <= C`.
+Instead, it's special syntax that checks both `A <= B` **and** `B <= C`, while
+returning the leftmost operand (`A`) on success. This enables natural
+mathematical notation for ranges without requiring `and` operators.
 
 ### Arithmetic Operations
 
@@ -906,6 +1035,27 @@ C:int = 3
 Result := A + B * C      # Multiplication first
 Average := (A + B) / 2   # Parentheses override precedence
 ```
+
+Integer division by zero fails and has the `<decides>` effect.
+When dividing integers, `X / Y` can fail if `Y` is `0`, allowing you to handle
+this case safely:
+
+<!--versetest
+assert:
+    X:int = 10
+    Y:int = 0
+    # Integer division by zero fails
+    not(Result := X / Y)
+-->
+```verse
+if (Result := X / Y):
+    Print("Result: {Result}")
+else:
+    Print("Cannot divide by zero")
+```
+
+Float division by zero does not fail; it returns infinity according to
+IEEE 754 floating-point semantics.
 
 Unary operators have the highest precedence among arithmetic operations:
 
@@ -998,29 +1148,36 @@ but they have fundamentally different semantics in most
 situations. Understanding when each is appropriate is essential for
 writing correct Verse code.
 
-**Semicolons** create *sequences* - they evaluate expressions in order and return the value of the last expression:
+**Semicolons** (within parentheses) create *sequences* - they evaluate expressions in order and return the value of the last expression:
 
-<!--versetest-->
+<!--versetest
+assert:
+    Result := (1; 2; 3)
+    Result = 3
+-->
 <!-- 49 -->
 ```verse
 Result := (1; 2; 3)     # Evaluates 1, then 2, then 3; returns 3
-# Result = 3 (type: int)
+# Note: Parentheses are required
+# Result := 1; 2         # ERROR: Not valid without parentheses
 ```
 
-**Commas** create *tuples* - they group multiple values into a single
-composite value:
+**Commas** (within parentheses) create *tuples* - they group multiple values into a single composite value:
 
 <!--versetest-->
 <!-- 50 -->
 ```verse
 Result := (1, 2, 3)     # Creates a tuple of three elements
 # Result = (1, 2, 3) (type: tuple(int, int, int))
+# Note: Parentheses are required
+# Result := 1, 2         # ERROR: Not valid without parentheses
 ```
 
 ### Context-Specific Behavior
 
-The semicolon-versus-comma distinction is most visible in
-parenthesized expressions:
+In expression contexts (like assignments), semicolons and commas require
+parentheses to create sequences and tuples. The distinction is clear when
+comparing parenthesized expressions:
 
 <!--versetest-->
 <!-- 51 -->

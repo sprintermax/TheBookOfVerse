@@ -453,6 +453,11 @@ This allows `break` to be used flexibly in expressions where a value
 is expected, since the compiler knows that path never produces a
 value.
 
+**Loop Return Value:** The loop expression itself produces a value of type
+`true` (the top type), regardless of what expressions appear in its body.
+This return value is rarely useful in practice—loops are typically used for
+their side effects.
+
 When `break` appears in nested loops, it exits only the innermost
 enclosing loop:
 
