@@ -13,7 +13,7 @@ code.
 <!-- TODO: We say "logic" a lot but we currently don't have it. Should
 that be toned down?  My current idea is to have some subsection early
 on that will explain the difference between MaxVerse and
-ShipVerse. -->
+ShipVerse.-->
 
 ## Parameters
 
@@ -22,7 +22,7 @@ many as needed. The syntax follows a straightforward pattern where
 each parameter has an identifier and a type, separated by commas:
 
 <!--versetest-->
-<!-- 01 -->
+<!-- 01-->
 ```verse
 ProcessData(Name:string, Age:int, Score:float):string =
     "{Name} is {Age} years old with a score of {Score}"
@@ -45,7 +45,7 @@ Named parameters are declared with a `?` prefix and called with the
 name and a `:=` followed by a value:
 
 <!--versetest-->
-<!-- 02 -->
+<!-- 02-->
 ```verse
 # A function with named parameters
 Greet(?Name:string, ?Greeting:string):string = "{Greeting} {Name}!"
@@ -57,7 +57,7 @@ Greet(?Name := "Alice", ?Greeting := "Hello")
 Named parameters with default values are truly optional:
 
 <!--versetest-->
-<!-- 03 -->
+<!-- 03-->
 ```verse
 # Named parameters with defaults
 Log(Message:string, ?Level:int=1, ?Color:string="white"):string =
@@ -80,12 +80,12 @@ assert_semantic_error(3629):
     Invalid(? Named:int, Positional:string):void = {}
 <#
 -->
-<!-- 04 -->
+<!-- 04-->
 ```verse
 Invalid: named followed by positional
 Invalid(? Named:int, Positional:string):void = {}  # ERROR
 ```
-<!-- #> -->
+<!-- #>-->
 
 When calling functions with named parameters, you must use the
 `?Name:=Value` syntax. All parameters without default must be specified.
@@ -95,7 +95,7 @@ Positional arguments come first:
 Configure(Required:int, ?Option1:string = "", ?Option2:logic = false):void = {}
 <#
 -->
-<!-- 07 -->
+<!-- 07-->
 ```verse
 Configure(Required:int, ?Option1:string, ?Option2:logic):void = { }
 
@@ -105,7 +105,7 @@ Configure(42, ?Option1:="test", ?Option2:=true)
 # Invalid: named arg before positional
 # Configure(?Option1:="test", 42, ?Option2:=true)  # ERROR
 ```
-<!-- #> -->
+<!-- #>-->
 
 Default values are evaluated in the function's defining scope; they
 can reference:
@@ -128,7 +128,7 @@ CreateRange(?Start:int = 0, ?End:int = Start + 10):[]int =
     array{Start, End}
 <#
 -->
-<!-- 09 -->
+<!-- 09-->
 ```verse
 # Module-level definition
 ModuleTimeout:int = 30
@@ -145,7 +145,7 @@ game_config := class:
 # Access earlier parameter
 CreateRange(?Start:int, ?End:int = Start + 10):[]int =...
 ```
-<!-- #> -->
+<!-- #>-->
 
 Default values work with overridden members in class hierarchies:
 
@@ -159,7 +159,7 @@ fast_game := class(base_game):
     DefaultSpeed<override>:float = 2.0
 <#
 -->
-<!-- 13 -->
+<!-- 13-->
 ```verse
 base_game := class:
     DefaultSpeed:float = 1.0
@@ -173,14 +173,14 @@ fast_game := class(base_game):
 base_game{}.Move()         # Uses 1.0
 fast_game{}.Move()         # Uses 2.0 (overridden value)
 ```
-<!-- #> -->
+<!-- #>-->
 
 Named and default parameters interact with the type system.  A
 function with default parameters is a subtype of the same function
 without those parameters:
 
 <!--versetest-->
-<!-- 14 -->
+<!-- 14-->
 ```verse
 Process(?Required:int, ?Optional:int = 0):int = Required + Optional
 
@@ -201,7 +201,7 @@ F3()                                        # Returns 3
 Function types preserve named parameter names:
 
 <!--versetest-->
-<!-- 15 -->
+<!-- 15-->
 ```verse
 Calculate(?Amount:float, ?Rate:float):float = Amount * Rate
 
@@ -215,7 +215,7 @@ F1:type{_(?Amount:float, ?Rate:float):float} = Calculate
 Function types do not include default values:
 
 <!--versetest-->
-<!-- 16 -->
+<!-- 16-->
 ```verse
 F1(?X:int=1):int = X
 
@@ -225,7 +225,7 @@ F2:type{_(?X:int=99):int} = F1    # F1 and F2 are of the same type
 Named parameters participate in function overload resolution:
 
 <!--versetest-->
-<!-- 17 -->
+<!-- 17-->
 ```verse
 Process(Value:int):string = "One parameter"
 Process(Value:int, ?Option:string):string = "Two parameters"
@@ -255,13 +255,13 @@ assert_semantic_error(3532):
     F(?X:int, ?Y:int):int = X - Y
 <#
 -->
-<!-- 18 -->
+<!-- 18-->
 ```verse
 # Not distinct - same parameters, different order
 F(?Y:int, ?X:int):int = X + Y
 F(?X:int, ?Y:int):int = X - Y  # ERROR
 ```
-<!-- #> -->
+<!-- #>-->
 
 **Defaults don't create distinctness:** The presence or absence of
 default values doesn't make signatures distinct if the parameter names
@@ -273,13 +273,13 @@ assert_semantic_error(3532):
     F(?X:int):int = X
 <#
 -->
-<!-- 19 -->
+<!-- 19-->
 ```verse
 # Same parameter name with/without default
 F(?X:int=42):int = X
 F(?X:int):int = X  # ERROR
 ```
-<!-- #> -->
+<!-- #>-->
 
 **The all-defaults rule:** If all parameters in both overloads have
 default values, the signatures are indistinct because both can be
@@ -291,7 +291,7 @@ assert_semantic_error(3532):
     F(?Y:int=42):int = Y
 <#
 -->
-<!-- 20 -->
+<!-- 20-->
 ```verse
 # ERROR Both can be called as F()
 # F(?X:int=42):int = X
@@ -301,13 +301,13 @@ assert_semantic_error(3532):
 # F(?X:int=42):int = X
 # F(?X:float=3.14):float = X  # ERROR
 ```
-<!-- #> -->
+<!-- #>-->
 
 **Different parameter names are distinct:** Functions with different
 named parameter names can overload:
 
 <!--versetest-->
-<!-- 22 -->
+<!-- 22-->
 ```verse
 # Valid: Different names
 F(?X:int):int = X
@@ -319,7 +319,7 @@ distinct from a positional parameter, even with the same name and
 type:
 
 <!--versetest-->
-<!-- 23 -->
+<!-- 23-->
 ```verse
 # Valid: Named vs positional
 F(?X:int):int = X
@@ -331,7 +331,7 @@ required (no default) named parameters differs, the overloads are
 distinct:
 
 <!--versetest-->
-<!-- 24 -->
+<!-- 24-->
 ```verse
 # Valid: First requires ?Y, second doesn't
 F(?Y:int, ?X:int=42):int = X
@@ -343,7 +343,7 @@ parameter types make signatures distinct, even if named parameters are
 the same:
 
 <!--versetest-->
-<!-- 25 -->
+<!-- 25-->
 ```verse
 # Valid: Different positional parameter types
 F(Arg:float, ?X:int):int = X
@@ -359,13 +359,13 @@ assert_semantic_error(3532):
     F(?X:int):int = X
 <#
 -->
-<!-- 26 -->
+<!-- 26-->
 ```verse
 # ERROR 3532: First can handle all calls to second
 # F(?Y:int=42, ?X:int=42):int = X
 # F(?X:int):int = X  # ERROR - can call first as F(?X := 10)
 ```
-<!-- #> -->
+<!-- #>-->
 
 ### Tuple as Arguments
 
@@ -374,7 +374,7 @@ cannot mix a pre-constructed tuple variable with additional named
 arguments:
 
 <!--versetest-->
-<!-- 28 -->
+<!-- 28-->
 ```verse
 Calculate(A:int, B:int, ?C:int = 0):int = A + B + C
 
@@ -394,7 +394,7 @@ list, allowing you to extract tuple elements inline without manual
 indexing:
 
 <!--versetest-->
-<!-- 29 -->
+<!-- 29-->
 ```verse
 # Destructure tuple parameter in place
 Func(A:int, (B:int, C:int), D:int):int =
@@ -414,7 +414,7 @@ indexing.
 Tuples can be destructured to arbitrary depth:
 
 <!--versetest-->
-<!-- 30 -->
+<!-- 30-->
 ```verse
 # Simple nesting
 H(A:int, (B:int, (C:int, D:int)), E:int):int =
@@ -431,7 +431,7 @@ You can mix destructured tuple parameters with regular tuple
 parameters that aren't destructured:
 
 <!--versetest-->
-<!-- 31 -->
+<!-- 31-->
 ```verse
 # Destructured form - access elements directly
 F(A:int, (B:int, C:int), D:int):int =
@@ -455,7 +455,7 @@ flexible APIs that combine structural decomposition with optional
 values:
 
 <!--versetest-->
-<!-- 32 -->
+<!-- 32-->
 ```verse
 # Named parameter inside nested tuple
 SumValues(A:int, (X:int, (Y:int, (?Z:int = 0)))):int =
@@ -472,7 +472,7 @@ A tuple can contain multiple named parameters, and they can be
 specified in any order:
 
 <!--versetest-->
-<!-- 33 -->
+<!-- 33-->
 ```verse
 ProcessData(Base:int, (Items:[]int, ?Scale:int = 1, ?Offset:int = 0)):int =
     if (First := Items[0]):
@@ -494,7 +494,7 @@ positional parameters), you must provide an empty tuple `()` even when
 using all defaults:
 
 <!--versetest-->
-<!-- 34 -->
+<!-- 34-->
 ```verse
 # Tuple with only named parameters
 Configure(Base:int, (?Width:int = 10, ?Height:int = 20)):int =
@@ -515,7 +515,7 @@ Refined types with `where` clauses are not allowed in destructured
 tuple parameters:
 
 <!--versetest-->
-<!-- 35 -->
+<!-- 35-->
 ```verse
 # ERROR 3624: Refined types not supported in tuple destructuring
 # H(A:int, ((B:int where B > 0), C:int), D:int):int =
@@ -537,7 +537,7 @@ with a single tuple. In the following, the tuple `Args` is
 automatically unpacked into the `Add` function's parameters:
 
 <!--versetest-->
-<!-- 36 -->
+<!-- 36-->
 ```verse
 Add(X:int, Y:int):int= X + Y
 Args:= (3, 5)
@@ -549,7 +549,7 @@ called with flattened arguments.  The individual arguments of the call
 to `F` are automatically packed into the tuple parameter:
 
 <!--versetest-->
-<!-- 37 -->
+<!-- 37-->
 ```verse
 F(P:tuple(int, int)):int = P(0) + P(1)
 
@@ -559,7 +559,7 @@ F(3, 5)  # Returns 8 - args automatically packed into tuple
 The empty tuple has the same flattening behavior:
 
 <!--versetest-->
-<!-- 39 -->
+<!-- 39-->
 ```verse
 F(X:tuple()):int = 42
 
@@ -581,7 +581,7 @@ compiler uses temporary variables to preserve the evaluation order you
 specified:
 
 <!--versetest-->
-<!-- 40 -->
+<!-- 40-->
 ```verse
 Process(A:int, ?B:int, ?C:int, ?D:int):string =
     "{A}, {B}, {C}, {D}"
@@ -615,7 +615,7 @@ Extension methods use a special syntax where the extended type appears
 in parentheses before the method name:
 
 <!--versetest-->
-<!-- 41 -->
+<!-- 41-->
 ```verse
 # Extend int with a custom method
 (Value:int).Double()<computes>:int = Value * 2
@@ -634,7 +634,7 @@ classes, interfaces, arrays, maps, or structs.
 Extending primitives:
 
 <!--versetest-->
-<!-- 42 -->
+<!-- 42-->
 ```verse
 (N:int).IsEven()<decides>:void = N = 0 or Mod[N,2] = 0
 (S:string).FirstChar()<decides>:char = S[0]
@@ -646,7 +646,7 @@ Extending primitives:
 Extending tuples:
 
 <!--versetest-->
-<!-- 43 -->
+<!-- 43-->
 ```verse
 # Extend a specific tuple type (Note: Sqrt is <reads>)
 (Point:tuple(int, int)).Distance()<reads>:float =
@@ -658,7 +658,7 @@ Extending tuples:
 Extending arrays:
 
 <!--versetest-->
-<!-- 44 -->
+<!-- 44-->
 ```verse
 (Vals:[]int).Sum()<transacts>:int =
     var Total:int = 0
@@ -671,7 +671,7 @@ array{1, 2, 3, 4, 5}.Sum()  # Returns 15
 Extending maps:
 
 <!--versetest-->
-<!-- 45 -->
+<!-- 45-->
 ```verse
 (M:[int]string).Keys()<computes>:[]int =
     for (Key->X:M):
@@ -695,7 +695,7 @@ player := class:
     Name:string
     var Score:int
 -->
-<!-- 46 -->
+<!-- 46-->
 ```verse
 # Add method to existing class
 (P:player).AddScore(Points:int):void =
@@ -712,7 +712,7 @@ default parameters:
 <!--versetest
 <#
 -->
-<!-- 47 -->
+<!-- 47-->
 ```verse
 #(Text:string).Pad(?Left:int = 0, ?Right:int = 0):string = ...
 
@@ -720,7 +720,7 @@ default parameters:
 "Hello".Pad(?Right:=5)              # "Hello     "
 "Hello".Pad(?Left:= 2, ?Right:=3)   # "  Hello   "
 ```
-<!-- #> -->
+<!-- #>-->
 
 ### Overloading
 
@@ -728,7 +728,7 @@ You can define multiple extension methods with the same name for
 different types:
 
 <!--versetest-->
-<!-- 48 -->
+<!-- 48-->
 ```verse
 # Overloaded Extension method for different types
 (N:int).Format():string = "int:{N}"
@@ -746,7 +746,7 @@ The empty tuple `tuple()` represents the unit type and can have
 extension methods:
 
 <!--versetest-->
-<!-- 49 -->
+<!-- 49-->
 ```verse
 (Unit:tuple()).GetMagicNumber():int = 42
 
@@ -761,7 +761,7 @@ This can be useful for creating namespace-like groupings of functions.
 first-class values without calling them:
 
 <!--versetest-->
-<!-- 50 -->
+<!-- 50-->
 ```verse
 (N:int).Double():int = N * 2
 
@@ -781,7 +781,7 @@ player := class:
 
 <#
 -->
-<!-- 51 -->
+<!-- 51-->
 ```verse
 player := class:
     Health():int = 100
@@ -789,7 +789,7 @@ player := class:
 # Invalid: Conflicts with class method
 # (P:player).Health():int = 50  # ERROR
 ```
-<!-- #> -->
+<!-- #>-->
 
 This prevents ambiguity and ensures that class methods always take precedence.
 
@@ -801,7 +801,7 @@ utils := module:
     (S:string).Reverse<public>():string = S
 <#
 -->
-<!-- 52 -->
+<!-- 52-->
 ```verse
 # In module A
 utils := module:
@@ -813,7 +813,7 @@ using { utils }
 
 "Hello".Reverse()  # Available after importing
 ```
-<!-- #> -->
+<!-- #>-->
 
 **Extension Methods in Class Scope:** Extension methods can be defined
 inside classes and access class members:
@@ -834,7 +834,7 @@ GM.ProcessScore(5)
 }
 <# 
 -->
-<!-- 53 -->
+<!-- 53-->
 ```verse
 game_manager := class:
     Multiplier:int = 10
@@ -848,32 +848,16 @@ game_manager := class:
 GM := game_manager{}
 GM.ProcessScore(5)  # Returns 50
 ```
-<!-- #> -->
+<!-- #>-->
 
 This creates a lexical closure where the extension method can
 reference the enclosing class's members.
 
 **Tuple Argument Conversion:** When an extension method has multiple parameters, you can pass a tuple to provide all arguments at once:
 
-<!--versetest
-point := class<allocates>:
-    X:int
-    Y:int
-
-(P:point).Translate(DX:int, DY:int)<allocates>:point =
-    point{X := P.X + DX, Y := P.Y + DY}
-
-M()<transacts>:void={
-Origin := point{X := 0, Y := 0}
-Delta := (5, 10)
-NewPoint := Origin.Translate(Delta)
-}
--->
-<!-- 54 -->
+<!-- 54-->
 ```verse
-point := class:
-    X:int
-    Y:int
+point := class<computes>{ X:int; Y:int }
 
 (P:point).Translate(DX:int, DY:int)<allocates>:point =
     point{X := P.X + DX, Y := P.Y + DY}
@@ -926,7 +910,7 @@ animal := class:
 dog := class(animal):
     Breed:string
 -->
-<!-- 64 -->
+<!-- 64-->
 ```verse 
 # Functions with different parameter/return types
 F1(X:animal):dog = dog{Name := X.Name, Breed := "Unknown"}
@@ -962,7 +946,7 @@ UsePure(F()<computes>:int):int = F()
 UseTransactional(F()<transacts>:int):int = F()
 UseSuspendable(F()<suspends>:int):task(int) = spawn{ F() }
 -->
-<!-- 65 -->
+<!-- 65-->
 ```verse
 UsePure(Pure)                    # OK
 UseTransactional(Transactional)  # OK
@@ -987,7 +971,7 @@ base := class:
 derived := class(base):
     Extra:string
 -->	
-<!-- 66 -->
+<!-- 66-->
 ```verse
 # Assume the following:
 # base := class{Value:int}
@@ -1011,7 +995,7 @@ that include parameter types, return types, and effects. Underscore
 describes a signature, not a specific function:
 
 <!--versetest-->
-<!-- 72 -->
+<!-- 72-->
 ```verse
 # Function type variable
 var Handler:?type{_(:string, :int)<decides>:void} = false
@@ -1039,14 +1023,16 @@ m:= module:
     ValidType1 := type{_():int}
     ValidType2 := type{_(:string, :int):float}
     ValidType3 := type{_()<transacts><decides>:void}
+<#    
 -->
-<!-- 73 -->
+<!-- 73-->
 ```verse
 # Type definitions for function signatures
 ValidType1 := type{_():int}
 ValidType2 := type{_(:string, :int):float}
 ValidType3 := type{_()<transacts><decides>:void}
 ```
+<!-- #>-->
 
 Within `type{}`, function declarations must have return types but
 *cannot have bodies*.
@@ -1059,7 +1045,7 @@ calculator := class:
     Operation:type{_(:int,:int):int}
 
 -->
-<!-- 74 -->
+<!-- 74-->
 ```verse
 # Assume:
 # calculator := class:
@@ -1080,7 +1066,7 @@ Function types can be used for local variables, enabling conditional
 function selection:
 
 <!--versetest-->
-<!-- 75 -->
+<!-- 75-->
 ```verse
 ProcessA():int = 10
 ProcessB():int = 20
@@ -1101,7 +1087,7 @@ SelectFunction(false)  # Returns 20
 Combine `type{}` with `?` to create optional function types:
 
 <!--versetest-->
-<!-- 76 -->
+<!-- 76-->
 ```verse
 DefaultHandler()<computes>:int = -1
 CustomHandler()<computes>:int = 42
@@ -1117,7 +1103,7 @@ Process[option{CustomHandler}]   # Returns 42 (custom handler)
 Create arrays of functions sharing the same signature:
 
 <!--versetest-->
-<!-- 77 -->
+<!-- 77-->
 ```verse
 GetZero():int = 0
 GetOne():int = 1
@@ -1137,7 +1123,7 @@ SumFunctions(array{GetZero, GetOne, GetTwo})  # Returns 3
 **Map-Filter-Reduce**:
 
 <!--versetest-->
-<!-- 78 -->
+<!-- 78-->
 ```verse
 # Generic map
 Map(Items:[]t, F(:t)<transacts>:u where t:type, u:type)<transacts>:[]u =
@@ -1172,7 +1158,7 @@ Sum := Fold(Values, 0, AddTo)
 **Function composition**:
 
 <!--versetest-->
-<!-- 79 -->
+<!-- 79-->
 ```verse
 Compose(F(:b):c, G(:a):b where a:type, b:type, c:type):type{_(:a):c} =
     # Return a nested function that composes F and G
@@ -1190,7 +1176,7 @@ DoubleThenIncrement(5)  # Returns 11 (5*2 + 1)
 **Partial application**:
 
 <!--versetest-->
-<!-- 80 -->
+<!-- 80-->
 ```verse
 Partial(F(:a, :b):c, X:a where a:type, b:type, c:type):type{_(:b):c} =
     # Return a nested function with X captured
@@ -1217,7 +1203,7 @@ A nested function is declared just like a top-level function, but
 inside another function's body:
 
 <!--versetest-->
-<!-- 81 -->
+<!-- 81-->
 ```verse
 Outer(X:int):int =
     # Nested function definition
@@ -1236,7 +1222,7 @@ Nested functions capture (close over) variables from any enclosing
 scope, creating powerful closures:
 
 <!--versetest-->
-<!-- 82 -->
+<!-- 82-->
 ```verse
 MakeGreeter(Name:string):type{_():string} =
     # Greeting captures Name from outer scope
@@ -1258,7 +1244,7 @@ Each call to `MakeGreeter` creates a new closure with its own captured
 Nested functions support overloading by parameter types:
 
 <!--versetest-->
-<!-- 83 -->
+<!-- 83-->
 ```verse
 Process(X:int):string =
     # Overloaded nested functions
@@ -1281,7 +1267,7 @@ Overload resolution works the same as for top-level functions.
 Nested functions can capture `var` variables and mutate them, creating stateful closures:
 
 <!--versetest-->
-<!-- 84 -->
+<!-- 84-->
 ```verse
 MakeCounter(Initial:int):tuple(type{_():int}, type{_():void}) =
     var Count:int = Initial
@@ -1323,7 +1309,7 @@ assert_semantic_error(3502):
         my_class := class {}
 <#
 -->
-<!-- 86 -->
+<!-- 86-->
 ```verse
 # ERROR: Cannot define classes in local scope
 F():void =
@@ -1335,7 +1321,7 @@ my_class := class {}
 F():void =
     Instance := my_class{}  # OK - can use class
 ```
-<!-- #> -->
+<!-- #>-->
 
 - Nested functions cannot reference variables or other nested
   functions defined later in the same scope (this also means mutually
@@ -1348,7 +1334,7 @@ assert_semantic_error(3506):
         G():int = 42
 <#
 -->
-<!-- 87 -->
+<!-- 87-->
 ```verse
 # ERROR 3506: G used before defined
 F():void =
@@ -1360,7 +1346,7 @@ F():void =
     G():int = 42
     X := G()     # OK: G is defined
 ```
-<!-- #> -->
+<!-- #>-->
 
 - The `(super:)` syntax for calling parent class methods **cannot** be used in nested functions:
 
@@ -1376,7 +1362,7 @@ assert_semantic_error(3612):
             G()
 <#
 -->
-<!-- 88 -->
+<!-- 88-->
 ```verse
 # ERROR 3612: super not allowed in nested function
 base_class := class:
@@ -1395,7 +1381,7 @@ derived_class := class(base_class):
         G():int = BaseResult * 2
         G()
 ```
-<!-- #> -->
+<!-- #>-->
 
 ## Parametric Functions
 
@@ -1409,7 +1395,7 @@ A parametric function declares type parameters using a `where` clause
 that specifies constraints on those types:
 
 <!--versetest-->
-<!-- 89 -->
+<!-- 89-->
 ```verse
 # Simple identity function - works with any type
 Identity(X:t where t:type):t = X
@@ -1421,7 +1407,7 @@ Identity("hello")   # t inferred as string, returns "hello"
 The `where t:type` clause declares `t` as a type parameter with the constraint `type`, meaning it can be any Verse type. The function signature `(X:t):t` means "takes a value of type `t` and returns a value of that same type `t`."
 
 <!--NoCompile-->
-<!-- 90 -->
+<!-- 90-->
 ```verse
 FunctionName(Parameters where TypeParameter:Constraint, ...):ReturnType = Body
 ```
@@ -1435,7 +1421,7 @@ pass, eliminating the need for explicit type annotations in most
 cases:
 
 <!--versetest-->
-<!-- 91 -->
+<!-- 91-->
 ```verse
 # Function with two type parameters
 Pair(X:t, Y:u where t:type, u:type):tuple(t, u) = (X, Y)
@@ -1448,7 +1434,7 @@ Pair(true, 3.14)      # t = logic, u = float, returns (true, 3.14)
 Inference with collections:
 
 <!--versetest-->
-<!-- 92 -->
+<!-- 92-->
 ```verse
 # Generic first element function
 First(Items:[]t where t:type)<decides>:t = Items[0]
@@ -1459,7 +1445,7 @@ Result :int= First[Values]  # t inferred as int from []int
 When you pass multiple values to a parametric function expecting a single type parameter, Verse can infer either a tuple or an array:
 
 <!--versetest-->
-<!-- 93 -->
+<!-- 93-->
 ```verse
 # Returns the argument unchanged
 Identity(X:t where t:type):t = X
@@ -1478,7 +1464,7 @@ Type constraints restrict which types can be used with type parameters, enabling
 The most permissive constraint accepts any type:
 
 <!--versetest-->
-<!-- 94 -->
+<!-- 94-->
 ```verse
 # Works with absolutely any type
 Store(Value:t where t:type):t = Value
@@ -1498,7 +1484,7 @@ ProcessVehicle(V:t where t:subtype(vehicle)):t =
     V
 <#
 -->
-<!-- 95 -->
+<!-- 95-->
 ```verse
 vehicle := class:
     Speed:float = 0.0
@@ -1512,7 +1498,7 @@ ProcessVehicle(V:t where t:subtype(vehicle)):t =
     Print("Speed: {V.Speed}")
     V
 ```
-<!-- #> -->
+<!-- #>-->
 
 <!--versetest
 vehicle := class:
@@ -1525,7 +1511,7 @@ ProcessVehicle(V:t where t:subtype(vehicle)):t =
     Print("Speed: {V.Speed}")
     V
 -->
-<!-- 200 -->
+<!-- 200-->
 ```verse
 # Valid calls
 ProcessVehicle(vehicle{})      # t = vehicle
@@ -1545,7 +1531,7 @@ ProcessVehicle(V:t where t:subtype(vehicle))<transacts>:t =
     Print("Speed: {V.Speed}")
     V
 -->
-<!-- 96 -->
+<!-- 96-->
 ```verse
 # Type-preserving function with subtype constraint
 MyCar := car{NumDoors:=4, Speed:=60.0}
@@ -1555,7 +1541,7 @@ Result.NumDoors                  # Can access car-specific fields
 The `subtype(comparable)` constraint enables equality comparisons:
 
 <!--versetest-->
-<!-- 97 -->
+<!-- 97-->
 ```verse
 # Can use = and <> operators on t
 FindInArray(Items:[]t, Target:t where t:subtype(comparable))<decides>:[]int =
@@ -1566,7 +1552,7 @@ FindInArray(Items:[]t, Target:t where t:subtype(comparable))<decides>:[]int =
 Type parameters can reference each other in constraints:
 
 <!--versetest-->
-<!-- 98 -->
+<!-- 98-->
 ```verse
 # u must be a subtype of t
 Convert(Base:t, Derived:u where t:type, u:subtype(t)):t = Base
@@ -1586,7 +1572,7 @@ player := class(entity):
     Score:int = 0
 <#
 -->
-<!-- 99 -->
+<!-- 99-->
 ```verse
 entity := class:
     Name:string = "Entity"
@@ -1596,7 +1582,7 @@ player := class(entity):
     Score:int = 0
 
 ```
-<!-- #> -->
+<!-- #>-->
 
 <!--versetest
 entity := class:
@@ -1606,7 +1592,7 @@ entity := class:
 player := class(entity):
     Score:int = 0
 -->
-<!-- 299 -->
+<!-- 299-->
 ```verse
 # Can access entity members through type parameter
 GetInfo(E:t where t:subtype(entity)):tuple(t, string, int) =
@@ -1627,7 +1613,7 @@ CheckStatus(E:t where t:subtype(entity)):string =
     E.GetStatus()
 <#
 -->
-<!-- 100 -->
+<!-- 100-->
 ```verse
 entity := class:
     GetStatus():string = "Active"
@@ -1636,7 +1622,7 @@ entity := class:
 CheckStatus(E:t where t:subtype(entity)):string =
     E.GetStatus()  # Method call through type parameter
 ```
-<!-- #> -->
+<!-- #>-->
 
 ### Polarity and Variance
 
@@ -1657,7 +1643,7 @@ Type parameters must be used consistently according to variance rules. This ensu
 only in positions compatible with their intended use:
 
 <!--versetest-->
-<!-- 101 -->
+<!-- 101-->
 ```verse
 # Valid: t appears covariantly (return type)
 GetValue(X:t where t:type):t = X
@@ -1677,13 +1663,13 @@ assert_semantic_error(3552):
     MakeContainer(X:t where t:type):c(t) = c(t){X := X}
 <#
 -->
-<!-- 102 -->
+<!-- 102-->
 ```verse
 # ERROR 3552: Cannot return type that's invariant in t
 # c(t:type) := class{var X:t}  # Mutable field makes c invariant in t
 # MakeContainer(X:t where t:type):c(t) = c(t){X := X}
 ```
-<!-- #> -->
+<!-- #>-->
 
 The error occurs because `c(t)` contains a mutable field of type `t`,
 making it invariant - neither covariant nor contravariant. Returning
@@ -1692,7 +1678,7 @@ such a type from a parametric function is unsafe.
 **Map polarity:** Maps are contravariant in keys and covariant in values:
 
 <!--versetest-->
-<!-- 103 -->
+<!-- 103-->
 ```verse
 # Valid: contravariant key, covariant value
 ProcessMap(M:[t]u where t:subtype(comparable), u:type):[t]u = M
@@ -1708,7 +1694,7 @@ call site.
 Define multiple functions with the same name but different parameter types:
 
 <!--versetest-->
-<!-- 104 -->
+<!-- 104-->
 ```verse
 # Overload by parameter type
 Process(Value:int):string = "Integer: {Value}"
@@ -1735,7 +1721,7 @@ assert_semantic_error(3502):
     g := f
 <#
 -->
-<!-- 105 -->
+<!-- 105-->
 ```verse
 # ERROR 3502: Cannot capture overloaded function
 f(x:int):void = {}
@@ -1744,7 +1730,7 @@ f(x:float):void = {}
 # Error: which f?
 # g:void = f
 ```
-<!-- #> -->
+<!-- #>-->
 
 This restriction exists because the compiler cannot determine which overload you mean without seeing the call site with arguments.
 
@@ -1756,7 +1742,7 @@ parameter types are also different:
 **Valid: Different types, different effects:**
 
 <!--versetest-->
-<!-- 106 -->
+<!-- 106-->
 ```verse
 Process(x:float):float = x
 Process(x:int)<transacts><decides>:int = x = 1
@@ -1773,13 +1759,13 @@ assert_semantic_error(3532):
     f(x:int)<transacts><decides>:void = {}
 <#
 -->
-<!-- 107 -->
+<!-- 107-->
 ```verse
 # ERROR 3532: Same parameter type
 f(x:int):void = {}
 f(x:int)<transacts><decides>:void = {}  # ERROR
 ```
-<!-- #> -->
+<!-- #>-->
 
 Effects alone don't create distinctness - you need different parameter types.
 
@@ -1795,7 +1781,7 @@ c1 := class(c0):
     f(X:float):float = X
 <#
 -->
-<!-- 108 -->
+<!-- 108-->
 ```verse
 c0 := class:
     f(X:int):int = X
@@ -1804,7 +1790,7 @@ c1 := class(c0):
     # Add new overload for float
     f(X:float):float = X
 ```
-<!-- #> -->
+<!-- #>-->
 
 <!--versetest
 c0 := class:
@@ -1813,7 +1799,7 @@ c0 := class:
 c1 := class(c0):
     f(X:float):float = X
 -->
-<!-- 208 -->
+<!-- 208-->
 ```verse
 c0{}.f(5)     # OK - int overload
 c1{}.f(5)     # OK - inherited int overload
@@ -1836,9 +1822,9 @@ e := class<allocates>:
 
 myf := class<allocates>(e):
     func<override>(C:c):d = d{}
-<#>
+<#
 -->
-<!-- 109 -->
+<!-- 109-->
 ```verse
 # Parent class with overloads
 e := class:
@@ -1853,7 +1839,7 @@ myf := class(e):
 # g := class(e):
 #     func(D:d):d = D  # ERROR - ambiguous with func(C:c)
 ```
-<!-- #> -->
+<!-- #>-->
 
 ### Interfaces with Overloaded Methods
 
@@ -1869,7 +1855,7 @@ entity := class(formatter):
     Format<override>(X:float):string = "Entity-{X}"
 <#
 -->
-<!-- 110 -->
+<!-- 110-->
 ```verse
 formatter := interface:
     Format(X:int):string = "{X}"
@@ -1879,7 +1865,7 @@ entity := class(formatter):
     Format<override>(X:int):string = "Entity-{X}"
     Format<override>(X:float):string = "Entity-{X}"
 ```
-<!-- #> -->
+<!-- #>-->
 
 ### Restrictions
 
@@ -1892,7 +1878,7 @@ assert_semantic_error(3502):
     var f():void = {}
 <#
 -->
-<!-- 111 -->
+<!-- 111-->
 ```verse
 # ERROR 3502: Cannot have var overloaded functions
 # var f():void = {}
@@ -1902,7 +1888,7 @@ assert_semantic_error(3502):
 # var f():void = {}
 # f(x:int):void = {}
 ```
-<!-- #> -->
+<!-- #>-->
 
 **Cannot overload functions with non-functions:**
 
@@ -1914,20 +1900,20 @@ assert_semantic_error(3532):
     f():void = {}
 <#
 -->
-<!-- 112 -->
+<!-- 112-->
 ```verse
 # ERROR: Cannot overload with variable
 # f:int = 0
 # f():void = {}
 ```
-<!-- #> -->
+<!-- #>-->
 
 **Cannot overload classes:**
 
 Class names cannot be overloaded:
 
 <!--NoCompile-->
-<!-- 113 -->
+<!-- 113-->
 ```verse
 # ERROR 3588, 3532: Cannot overload class name
 # C := class{}
@@ -1947,7 +1933,7 @@ assert_semantic_error(3518):
         0
 <#
 -->
-<!-- 114 -->
+<!-- 114-->
 ```verse
 # ERROR 3518: Cannot determine which overload
 F(X:int):int = X
@@ -1957,7 +1943,7 @@ F(X:float):float = X
 #     F(@ignore_unreachable return)  # ERROR - which F?
 #     0
 ```
-<!-- #> -->
+<!-- #>-->
 
 ### Overloading with `<suspends>`
 
@@ -1965,7 +1951,7 @@ You can mix suspending and non-suspending overloads if the parameter
 types differ:
 
 <!--versetest-->
-<!-- 115 -->
+<!-- 115-->
 ```verse
 f(x:int)<suspends>:void =
     Sleep(1.0)
@@ -1989,7 +1975,7 @@ assert_semantic_error(3512):
     g():void = f(1.0)
 <#
 -->
-<!-- 116 -->
+<!-- 116-->
 ```verse
 # ERROR 3512: suspends version needs spawn context
 f(x:int):void = {}
@@ -1997,7 +1983,7 @@ f(x:float)<suspends>:void = {}
 
 # g():void = f(1.0)  # ERROR - float version is suspends
 ```
-<!-- #> -->
+<!-- #>-->
 
 **Cannot spawn non-suspending overload:**
 
@@ -2008,7 +1994,7 @@ assert_semantic_error(3538):
     g():void = spawn{f(1)}
 <#
 -->
-<!-- 117 -->
+<!-- 117-->
 ```verse
 # ERROR 3538: Cannot spawn non-suspends function
 f(x:int):void = {}
@@ -2016,7 +2002,7 @@ f(x:float)<suspends>:void = {}
 
 # g():void = spawn{f(1)}  # ERROR - int version not suspends
 ```
-<!-- #> -->
+<!-- #>-->
 
 ### Types 
 
@@ -2025,7 +2011,7 @@ return value. The type syntax uses an underscore as a placeholder for
 the function name:
 
 <!--versetest-->
-<!-- 118 -->
+<!-- 118-->
 ```verse
 type{_(:int,:string)<decides>:float}
 ```
@@ -2038,7 +2024,7 @@ their signatures do not create ambiguity. The compiler can distinguish
 between overloads based on the argument types:
 
 <!--versetest-->
-<!-- 119 -->
+<!-- 119-->
 ```verse
 Transform(X:int):string = "I:{X}"
 Transform(X:float):string = "F:{X}"
@@ -2071,13 +2057,13 @@ assert_semantic_error(3532):
     F(:logic):void = {}
 <#
 -->
-<!-- 120 -->
+<!-- 120-->
 ```verse
 # ERROR: Not distinct
 F(:?any):void = {}
 F(:logic):void = {}
 ```
-<!-- #> -->
+<!-- #>-->
 
 **2. Arrays and Maps.**  Arrays `[]t` and maps `[k]t` are not distinct:
 
@@ -2087,13 +2073,13 @@ assert_semantic_error(3532):
     F(:[string]int):void = {}
 <#
 -->
-<!-- 121 -->
+<!-- 121-->
 ```verse
 # ERROR: Not distinct
 F(:[]int):void = {}
 F(:[string]int):void = {}
 ```
-<!-- #> -->
+<!-- #>-->
 
 **3. Functions and Maps.** Function types and maps are not distinct:
 
@@ -2103,13 +2089,13 @@ assert_semantic_error(3532):
     F(G(:string)<transacts><decides>:int):void = {}
 <#
 -->
-<!-- 122 -->
+<!-- 122-->
 ```verse
 # ERROR: Not distinct
 F(:[string]int):void = {}
 F(G(:string)<transacts><decides>:int):void = {}
 ```
-<!-- #> -->
+<!-- #>-->
 
 **4. Functions and Arrays.** Function types and arrays are not
 distinct because an overloaded function could match both:
@@ -2120,13 +2106,13 @@ assert_semantic_error(3532):
     F(G(:string)<transacts><decides>:int):void = {}
 <#
 -->
-<!-- 123 -->
+<!-- 123-->
 ```verse
 # ERROR: Not distinct
 F(:[]int):void = {}
 F(G(:string)<transacts><decides>:int):void = {}
 ```
-<!-- #> -->
+<!-- #>-->
 
 **5. Interfaces and Classes.** An interface and any class are never
 distinct, even if the class doesn't implement the interface, because a
@@ -2140,7 +2126,7 @@ assert_semantic_error(3532):
     f(:t):void = {}
 <#
 -->
-<!-- 124 -->
+<!-- 124-->
 ```verse
 i := interface{}
 t := class{}
@@ -2149,7 +2135,7 @@ t := class{}
 f(:i):void = {}
 f(:t):void = {}
 ```
-<!-- #> -->
+<!-- #>-->
 
 **6. Functions with Different Effects.** Functions are not distinct
 based on effects alone. Changing or removing effects doesn't create a
@@ -2163,7 +2149,7 @@ assert_semantic_error(3532):
     F(G(:a):b):void = {}
 <#
 -->
-<!-- 126 -->
+<!-- 126-->
 ```verse
 a := class{}
 b := class{}
@@ -2172,7 +2158,7 @@ b := class{}
 F(G(:a)<transacts><decides>:b):void = {}
 F(G(:a):b):void = {}
 ```
-<!-- #> -->
+<!-- #>-->
 
 **7. Functions with Different Signatures.** Functions with different
 parameter or return types are not distinct because of function
@@ -2186,13 +2172,13 @@ assert_semantic_error(3532):
     F(G(:a):b):void = {}
 <#
 -->
-<!-- 127 -->
+<!-- 127-->
 ```verse
 # ERROR: Not distinct
 F(G(:b):b):void = {}
 F(G(:a):b):void = {}
 ```
-<!-- #> -->
+<!-- #>-->
 
 **8. void as Top Type.** `void` is treated as equivalent to the top
 type (accepts `any`), so it's not distinct from any other type:
@@ -2203,13 +2189,13 @@ assert_semantic_error(3532):
     F(:void):void = {}
 <#
 -->
-<!-- 128 -->
+<!-- 128-->
 ```verse
 # ERROR: Not distinct
 F(:int):void = {}
 F(:void):void = {}
 ```
-<!-- #> -->
+<!-- #>-->
 
 **9. Subtype Relationships.** Classes with subtype relationships are
 not distinct:
@@ -2222,7 +2208,7 @@ assert_semantic_error(3532):
     F(:b):void = {}
 <#
 -->
-<!-- 129 -->
+<!-- 129-->
 ```verse
 a := class{}
 b := class(a){}
@@ -2231,7 +2217,7 @@ b := class(a){}
 F(:a):void = {}
 F(:b):void = {}
 ```
-<!-- #> -->
+<!-- #>-->
 
 **10. Tuple Distinctness Rules.**  Tuples have complex distinctness rules:
 
@@ -2244,7 +2230,7 @@ assert_semantic_error(3532):
     F(:[]a, :a):void = {}
 <#
 -->
-<!-- 130 -->
+<!-- 130-->
 ```verse
 a := class{}
 
@@ -2252,7 +2238,7 @@ a := class{}
 F(:tuple(), :a):void = {}
 F(:[]a, :a):void = {}
 ```
-<!-- #> -->
+<!-- #>-->
 
 **Tuples and arrays are distinct only if tuple element types are
 completely distinct:**
@@ -2265,7 +2251,7 @@ assert_semantic_error(3532):
     F(:[]a, :a):void = {}
 <#
 -->
-<!-- 131 -->
+<!-- 131-->
 ```verse
 a := class{}
 b := class(a){}
@@ -2274,7 +2260,7 @@ b := class(a){}
 F(:tuple(a, b), :a):void = {}
 F(:[]a, :a):void = {}
 ```
-<!-- #> -->
+<!-- #>-->
 
 **Tuples and maps with `int` key are not distinct:**
 
@@ -2285,7 +2271,7 @@ assert_semantic_error(3532):
     F(:[int]a, :a):void = {}
 <#
 -->
-<!-- 132 -->
+<!-- 132-->
 ```verse
 a := class{}
 
@@ -2293,7 +2279,7 @@ a := class{}
 F(:tuple(a), :a):void = {}
 F(:[int]a, :a):void = {}
 ```
-<!-- #> -->
+<!-- #>-->
 
 **Tuples and maps with non-`int` key ARE distinct:**
 
@@ -2304,7 +2290,7 @@ F(:tuple(a), :a):void = {}
 F(:[logic]a, :a):void = {}
 <#
 -->
-<!-- 133 -->
+<!-- 133-->
 ```verse
 a := class{}
 
@@ -2312,7 +2298,7 @@ a := class{}
 F(:tuple(a), :a):void = {}
 F(:[logic]a, :a):void = {}  # OK
 ```
-<!-- #> -->
+<!-- #>-->
 
 **Singleton tuples and optional for `int` are not distinct:**
 
@@ -2323,7 +2309,7 @@ assert_semantic_error(3532):
     F(:?int, :a):void = {}
 <#
 -->
-<!-- 134 -->
+<!-- 134-->
 ```verse
 a := class{}
 
@@ -2331,14 +2317,14 @@ a := class{}
 F(:tuple(int), :a):void = {}
 F(:?int, :a):void = {}
 ```
-<!-- #> -->
+<!-- #>-->
 
 **Singleton tuples and optional for non-`int` ARE distinct:**
 
 <!--versetest
 a := class{}
 -->
-<!-- 135 -->
+<!-- 135-->
 ```verse
 # Valid: Distinct types
 F(:tuple(a), :a):void = {}
@@ -2351,7 +2337,7 @@ Publishing a function is a promise of backwards compatibility between
 the function and its clients. Consider this function:
 
 <!--versetest-->
-<!-- 139 -->
+<!-- 139-->
 ```verse
 F1<public>(X:int):int = X + 1
 ```
@@ -2367,7 +2353,7 @@ Functions that do not have the `<reads>` effect are less flexible. Consider
 this function:
 
 <!--versetest-->
-<!-- 140 -->
+<!-- 140-->
 ```verse
 F2<public>(X:int)<computes>:int = X + 1
 ```
@@ -2383,7 +2369,7 @@ type abstracts the function's body. Future version of Verse will support
 *transparent* functions:
 
 <!--NoCompile-->
-<!-- 141 -->
+<!-- 141-->
 ```verse
 F2<public>(X:int) := X + 1
 ```

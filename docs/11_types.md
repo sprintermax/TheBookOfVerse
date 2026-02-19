@@ -1020,7 +1020,7 @@ instances are not comparable because there's no universal way to
 define equality for user-defined types. However, you can make a class
 comparable using the `unique` specifier:
 
-<!--verse
+<!--versetest
 entity := class<unique>:
     ID:int
     Name:string
@@ -1047,7 +1047,7 @@ Player3 := Player1
 Player1 = Player2  # Fails - different instances
 Player1 = Player3  # Succeeds - same instance
 ```
-<!--verse
+<!--versetest
 #>
 -->
 
@@ -1447,7 +1447,7 @@ ProcessAnimals(GetDogSequence())  # OK due to covariance
 
 When conditionally selecting between generators, Verse finds the least common supertype:
 
-<!--verse
+<!--versetest
 GetChild1Sequence():[]child1 = array{}
 GetChild2Sequence():[]child2 = array{}
 -->
@@ -1627,7 +1627,7 @@ frequently-used type combinations.
 
 A type alias is created using simple assignment syntax at module scope:
 
-<!--verse
+<!--versetest
 entity:=struct{}
 -->
 <!-- 91 -->
@@ -1992,7 +1992,7 @@ subtypes of `t` and marked with the `<castable>` specifier. This
 enables runtime type queries and dynamic casting, which is essential
 for component systems and polymorphic hierarchies:
 
-<!--verse
+<!--versetest
 entity:=class{}
 vector3:=class{}
 -->
@@ -2027,7 +2027,7 @@ The `<final_super>` specifier marks classes as stable anchor points in
 inheritance hierarchies. These "final super classes" act as canonical
 representatives for families of related types:
 
-<!--verse
+<!--versetest
 entity:=class{}
 vector3:=class{}
 -->
@@ -2074,7 +2074,7 @@ The function fails if no appropriate `<final_super>` class exists.
 Consider this hierarchy:
 
 
-<!--verse
+<!--versetest
 vector3:=class{}
 -->
 <!-- 116 -->

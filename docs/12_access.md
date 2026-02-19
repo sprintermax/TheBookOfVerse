@@ -70,7 +70,7 @@ private, allowing access within the defining class and any classes
 that inherit from it. This level exists specifically to support
 inheritance hierarchies while maintaining encapsulation:
 
-<!--verse
+<!--versetest
 vector3:=class{}
 MaxHealth:int=1
 -->

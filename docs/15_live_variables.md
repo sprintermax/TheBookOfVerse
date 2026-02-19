@@ -34,7 +34,7 @@ re-evaluated whenever any of the guard's dependencies change, keeping
 the variable in sync.
 
 <!--versetest-->
-<!-- 01 -->
+<!-- 01-->
 ```verse
 var X:int = 0
 var Y:int = 0
@@ -60,7 +60,7 @@ re-evaluated, and the target variable updates automatically.
 Live variables can be declared in several ways, each suited to different use cases:
 
 <!--NoCompile-->
-<!-- 02 -->
+<!-- 02-->
 ```verse
 # Live variable declaration
 var live X:int = Exp
@@ -180,7 +180,7 @@ stay within dynamic constraints. Consider health that must remain
 within bounds:
 
 <!--NoCompile-->
-<!-- 04 -->
+<!-- 04-->
 ```verse
 clamp := class:
     var Lower:int = 0
@@ -243,7 +243,7 @@ guard evaluation, which Verse must be able to perform freely whenever
 dependencies change.
 
 <!--NoCompile-->
-<!-- 05 -->
+<!-- 05-->
 ```verse
 # ERROR: guard cannot write
 var X:int = 0
@@ -258,7 +258,7 @@ expressions use idempotent operations and values are comparable, these
 cycles can naturally converge to fixed points.
 
 <!--versetest-->
-<!-- 06 -->
+<!-- 06-->
 ```verse
 var X:int = 2
 var Y:int = 2
@@ -291,7 +291,7 @@ evaluation. The following illustrates a cyclic definition when `X` is
 larger than 0:
 
 <!--NoCompile-->
-<!-- 07 -->
+<!-- 07-->
 ```verse
 var X:int = 0
 var live Y:int = if (X>0) then X+1 else 0
@@ -311,7 +311,7 @@ Live variables track dependencies dynamically at runtime, not statically from so
 Consider this example:
 
 <!--NoCompile-->
-<!-- 08 -->
+<!-- 08-->
 ```verse
 var X:int = 1
 var Y:int = 2
@@ -342,7 +342,7 @@ A live variable established through its guard (not its type) can be
 turned off by a subsequent regular assignment.
 
 <!--versetest-->
-<!-- 09 -->
+<!-- 09-->
 ```verse
 var X:int = 0
 var Y:int = 5
@@ -375,7 +375,7 @@ programming.
 
 <!--versetest
 -->
-<!-- 10 -->
+<!-- 10-->
 ```verse
 F()<suspends>:void =
     var X:int = 0
@@ -403,11 +403,7 @@ int_ref := class:
 X:int_ref=int_ref{}
 Y:int_ref=int_ref{}
 -->
-<!-- 11 FAILURE
-  Line 9: Script Error 3512: This 'await' macro has the 'suspends' effect, which is not allowed by its context.
-  Line 5: Script Error 3512: This archetype instantiation constructs a class that has the 'transacts' effect, which is not allowed by its context.
-  Line 6: Script Error 3512: This archetype instantiation constructs a class that has the 'transacts' effect, which is not allowed by its context.
--->
+<!-- 11 -->
 ```verse
 # Wait for a specific condition
 await{X.Contents > 10}
@@ -426,7 +422,7 @@ resumes the current task, `upon` creates a new concurrent task that
 runs when triggered.
 
 <!--versetest-->
-<!-- 12 -->
+<!-- 12-->
 ```verse
 var Health:int = 100
 var IsDead:logic = false
@@ -477,7 +473,7 @@ The `when` expression evaluates its guard immediately. If the guard succeeds, th
 This makes `when` ideal for maintaining derived state and responding to ongoing changes. Synchronizing UI with game state, updating AI behavior based on player actions, or maintaining consistency between related variables all benefit from `when`'s persistent reactivity.
 
 <!--versetest-->
-<!-- 14 -->
+<!-- 14-->
 ```verse
 var X:int = 2
 var Y:int = 2
@@ -523,7 +519,7 @@ Canceling a task immediately removes all dependency tracking and prevents the as
 The `batch` expression groups multiple variable updates together, delaying notifications until the entire group completes. This prevents intermediate states from triggering reactive behaviors and ensures observers see consistent snapshots of related changes.
 
 <!--versetest-->
-<!-- 16 -->
+<!-- 16-->
 ```verse
 var X:int = 0
 var Y:int = 0
@@ -588,7 +584,7 @@ variable updates are rolled back and their notifications are
 suppressed.
 
 <!--versetest-->
-<!-- 18 -->
+<!-- 18-->
 ```verse
 var X:int = 0
 var Y:int = 0
@@ -614,7 +610,7 @@ A common pattern is for multiple UI elements to reflect the same
 game state, `when` provides automatic synchronization:
 
 <!--versetest-->
-<!-- 19 -->
+<!-- 19-->
 ```verse
 var PlayerScore:int = 0
 var DisplayedScore:int = 0
@@ -663,7 +659,8 @@ reactive routing.
 
 Use `upon` for one-time initialization when resources become available:
 
-<!--verse
+<!--versetest-->
+<!-- 21 FAILURE
 resource_manager := class:
     var TextureLoaded:logic = false
     var ModelLoaded:logic = false
@@ -707,7 +704,7 @@ When you assign to a live variable with a modifier stack type, the value flows t
 The public API is as follows:
 
 <!--NoCompile-->
-<!-- 22 -->
+<!-- 22-->
 ```verse
 modifier_ifc(t : type) := interface:
    Evaluate(Value:t)<reads> : t
@@ -725,7 +722,7 @@ The `AddModifier` method returns a `cancelable` which can be used to remove the 
 For example, consider the following which creates a live variable `Health` filtered through a modifier stack containing a magic potion modifier that doubles the input value:
 
 <!--NoCompile-->
-<!-- 23 -->
+<!-- 23-->
 ```verse
 HealthStack := modifier_stack(float){}
 HealthStack.AddModifier(magic_potion{Value:=2.0})
@@ -738,7 +735,7 @@ The variable automatically recomputes when the multiplier changes or when modifi
 In more detail, this example demonstrates two modifiers working together: a `magic_potion` that multiplies health, and a `clamp` that bounds values within a range.
 
 <!--NoCompile-->
-<!-- 24 -->
+<!-- 24-->
 ```verse
 # Define modifier implementations
 magic_potion := class(modifier_ifc(float)):
@@ -783,7 +780,7 @@ where modifier stacks maintain state specific to their associated live variable.
 Defining a live variable with no dependencies that can change is unnecessary and misleading:
 
 <!--NoCompile-->
-<!-- 25 -->
+<!-- 25-->
 ```verse
 var live X:int = 10    # X is 10 and will never change
 set live X = 20        # X is 20 and will never change
@@ -798,7 +795,7 @@ falsely suggests reactive behavior where none exists.
 Similarly, a live variable that only depends on immutable values will never update:
 
 <!--NoCompile-->
-<!-- 26 -->
+<!-- 26-->
 ```verse
 X:int = 10
 var live Y = X+1    # Y is 11 and will never change
@@ -813,7 +810,7 @@ A subtle error occurs when trying to make a variable live through a
 function type:
 
 <!--NoCompile-->
-<!-- 27 -->
+<!-- 27-->
 ```verse
 var Mult:int = 10
 
@@ -838,7 +835,7 @@ expression that produces the function.
 To see why, consider this equivalent transformation:
 
 <!--NoCompile-->
-<!-- 28 -->
+<!-- 28-->
 ```verse
 MFun = Multiply(Mult)
 var X:MFun = 10
@@ -852,7 +849,7 @@ effect.
 type directly has the `<reads>` effect:
 
 <!--NoCompile-->
-<!-- 29 -->
+<!-- 29-->
 ```verse
 var Mult:int = 10
 

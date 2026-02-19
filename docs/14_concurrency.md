@@ -126,7 +126,7 @@ All structured concurrency expressions (`sync`, `race`, `rush`, and
 `branch`) require the `<suspends>` effect. You cannot use these
 constructs in immediate (non-suspending) functions:
 
-<!--verse
+<!--versetest
 Operation1<public>()<suspends>:void = {}
 Operation2<public>()<suspends>:void = {}
 -->
@@ -195,7 +195,7 @@ from multiple sources all benefit from sync's all-or-nothing approach.
 
 Consider a more sophisticated example that demonstrates sync's composability:
 
-<!--verse
+<!--versetest
 LoadTexture()<suspends>:void={}
 ApplyTexture()<suspends>:void={}
 LoadSound()<suspends>:void={}
@@ -241,7 +241,7 @@ ProcessData(sync:
     FetchDataC()
 )
 ```
-<!--verse
+<!--versetest
 #>
 -->
 
@@ -807,7 +807,7 @@ StartTask()<suspends>:void =
 
 **Waiting for multiple spawned tasks:**
 
-<!--verse
+<!--versetest
 Task1()<suspends>:int=1
 Task2()<suspends>:int=2
 Task3()<suspends>:int=3
@@ -961,7 +961,7 @@ cancellation. Deferred blocks always execute during stack unwinding,
 making them the perfect tool for resource cleanup, logging, and
 finalization.
 
-<!--verse
+<!--versetest
 AcquireResource():int=42
 ReleaseResource(:int):void={}
 ProcessWithResource(:int)<suspends>:void={Sleep(1.0)}
@@ -1024,7 +1024,7 @@ acquired, preventing dependency issues.
 
 **Resource cleanup:**
 
-<!--verse
+<!--versetest
 OpenFile(:string):int=0
 CloseFile(:int):void={}
 ProcessFile(:int)<suspends>:void={}
@@ -1062,7 +1062,7 @@ TemporarilyModifyState()<suspends>:void =
 
 **Logging and debugging:**
 
-<!--verse
+<!--versetest
 Operation()<suspends>:void={}
 -->
 <!-- 40 -->
@@ -1080,7 +1080,7 @@ TrackedOperation()<suspends>:void =
 
 When a task is canceled, defer blocks execute as the stack unwinds from the cancellation point:
 
-<!--verse
+<!--versetest
 Setup():void={}
 Teardown():void={}
 LongOperation()<suspends>:void={loop{NextTick()}}
@@ -1179,7 +1179,7 @@ add actual delay, it serves two critical purposes:
 
 This makes `Sleep(0.0)` essential for responsive concurrent code:
 
-<!--verse
+<!--versetest
 ProcessFrame():void={}
 ExpensiveOperation(:int):void={}
 -->
@@ -1308,7 +1308,7 @@ TickBasedLoop()<suspends>:void =
 
 Timing Patterns are:
 
-<!--verse
+<!--versetest
 DoAction():void={}
 UpdateLogic()<computes>:void={}
 Float(:int)<computes>:float=0.0
@@ -1986,7 +1986,7 @@ their actions.
 
 Implement operations with timeouts using `race`:
 
-<!--verse
+<!--versetest
 ActualOperation()<suspends>:void={}
 -->
 <!-- 71 -->
@@ -2003,7 +2003,7 @@ PerformWithTimeout()<suspends>:logic =
 
 Initialize multiple systems concurrently:
 
-<!--verse
+<!--versetest
 using{/Verse.org/VerseCLR}
 LoadAssets()<suspends>:void={}
 ConnectToServer()<suspends>:void={}
@@ -2023,7 +2023,7 @@ InitializeGame()<suspends>:void =
 
 Start background tasks that don't block gameplay:
 
-<!--verse
+<!--versetest
 MonitorPlayerStats()<suspends>:void={}
 UpdateLeaderboards()<suspends>:void={}
 ProcessAchievements()<suspends>:void={}
@@ -2097,9 +2097,6 @@ for (I := 0..10):
     ProcessWithRush(I)  # OK
 ```
 <!-- #> -->
-<!--verse
-}
--->
 
 This restriction forces you to be intentional about creating
 background tasks in iterations. By wrapping the concurrent operation
