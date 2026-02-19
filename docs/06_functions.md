@@ -855,7 +855,8 @@ reference the enclosing class's members.
 
 **Tuple Argument Conversion:** When an extension method has multiple parameters, you can pass a tuple to provide all arguments at once:
 
-<!-- 54-->
+<!--versetest-->
+<!-- 54 -->
 ```verse
 point := class<computes>{ X:int; Y:int }
 

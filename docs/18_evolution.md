@@ -8,6 +8,7 @@ At its core, Verse embraces three fundamental principles that shape how code evo
 
 When developers publish code to the Verse metaverse, they enter into a social contract with all future users of that code. This contract is more than just a convention—it's enforced by the language itself. Consider what happens when you publish a simple value:
 
+<!--versetest-->
 <!-- 01 -->
 ```verse
 Thing<public>:int = 666

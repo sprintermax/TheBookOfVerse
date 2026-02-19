@@ -660,6 +660,7 @@ Result := F[5]  # Must use [] because result type has <decides>
 
 Effect joining applies to all control flow that selects between functions:
 
+<!--versetest-->
 <!-- 23 -->
 ```verse
 Identity(X:int)<computes>:int = X
@@ -771,6 +772,7 @@ specifiers, which apply to their constructors. This is particularly
 useful for ensuring that creating certain objects remains pure or has
 limited effects:
 
+<!--versetest-->
 <!-- 28 -->
 ```verse
 # Pure data structure - constructor has no effects
@@ -787,6 +789,7 @@ monster := class<unique><allocates>:
 
 Classes and structs **cannot** be marked with `<suspends>` or `<decides>`:
 
+<!--versetest-->
 <!-- 29 -->
 ```verse
 # Valid effect specifiers for classes/structs:
@@ -805,6 +808,7 @@ either exists fully formed or doesn't exist at all.
 
 Field default values and block clauses in classes have strict effect requirements:
 
+<!--versetest-->
 <!-- 30 -->
 ```verse
 # Field initializers must use pure functions

@@ -42,6 +42,7 @@ Distance(P1:point, P2:point)<reads>:float =
 
 In this pure world, equality means structural equality — two values are equal if they have the same shape and content. For primitive types and structs, this happens automatically. For classes, which have identity beyond their content, equality requires more careful consideration.
 
+<!--versetest-->
 <!-- 02 -->
 ```verse
 # Recursive data structures using classes

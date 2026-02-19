@@ -342,6 +342,7 @@ assert_semantic_error(3512, 3552, 3547, 3512):
     Value := (?int)[component{}]
 <#
 -->
+<!--versetest-->
 <!-- 19 -->
 ```verse
 component := class<castable>{}
@@ -914,6 +915,7 @@ NegValue2:negative_percent = ---0.7  # Triple negation = -0.7
 Overlapping refinement types cannot be used for function
 overloading—they're ambiguous:
 
+<!--versetest-->
 <!-- 43 -->
 ```verse
 percent := type{_X:float where 0.0 <= _X, _X <= 1.0}
@@ -1124,6 +1126,7 @@ G(X:comparable):void = {}  # ERROR: unique_class is comparable
 
 However, you can overload with non-comparable types:
 
+<!--versetest-->
 <!-- 51 -->
 ```verse
 # This is allowed
@@ -1539,6 +1542,7 @@ Discard("test")          # string → void
 Class fields can be typed as `void`, accepting any initialization
 value:
 
+<!--versetest-->
 <!-- 80 -->
 ```verse
 config := class:
@@ -1592,6 +1596,7 @@ containers. Arrays and options are covariant in their element type -
 if A is a subtype of B, then `[]A` is a subtype of `[]B` and `?A` is a
 subtype of `?B`. This allows natural code like:
 
+<!--versetest-->
 <!-- 89 -->
 ```verse
 ProcessNumbers(Numbers:[]rational):void =
@@ -1608,6 +1613,7 @@ type `(T1)->R1` is a subtype of `(T2)->R2` if T2 is a subtype of T1
 (contravariance) and R1 is a subtype of R2 (covariance). This ensures
 that function subtyping preserves type safety:
 
+<!--versetest-->
 <!-- 90 -->
 ```verse
 function_type1 := type{_(:any):int}
@@ -1695,6 +1701,7 @@ ProtectedAlias<protected> := float  # only in classes and interfaces
 
 **Type aliases cannot be more public than the types they alias:**
 
+<!--versetest-->
 <!-- 94 -->
 ```verse
 private_class := class{}      # No specifier = internal scope
@@ -1737,6 +1744,7 @@ assert_semantic_error(3593):
     Pub8<public> := type{_():private_type}
 <#
 -->
+<!--versetest-->
 <!-- 95 -->
 ```verse
 private_type := class{}
@@ -1781,6 +1789,7 @@ which are specialized for classes and interfaces, `subtype(T)` works
 with **any type** in Verse, including primitives, enums, collections,
 and function types.
 
+<!--versetest-->
 <!-- 100 -->
 ```verse
 C0 := class {}
@@ -1837,6 +1846,7 @@ The `subtype` constructor preserves the subtyping relationship:
 `subtype(T) <: subtype(U)` if and only if `T <: U`. This means you can
 assign a more specific subtype to a less specific one:
 
+<!--versetest-->
 <!-- 102 -->
 ```verse
 super_class := class{}
@@ -1852,6 +1862,7 @@ SupertypeVar:subtype(super_class) = SubtypeVar  # Valid
 
 This also applies to interfaces:
 
+<!--versetest-->
 <!-- 103 -->
 ```verse
 super_interface := interface{}
@@ -1868,6 +1879,7 @@ GeneralType:subtype(super_interface) = SpecificType  # Valid
 
 When working with interfaces, `subtype(T)` can hold any class that implements the interface:
 
+<!--versetest-->
 <!-- 104 -->
 ```verse
 printable := interface:
@@ -1884,6 +1896,7 @@ DocumentType:subtype(printable) = document
 
 Both `subtype(T)` and `castable_subtype(T)` are subtypes of `type`, meaning they can be used where `type` is expected:
 
+<!--versetest-->
 <!-- 105 -->
 ```verse
 c := class:
@@ -1910,6 +1923,7 @@ represents concrete (instantiable) subclasses of `t`. A concrete class
 is one that can be instantiated directly—it has the `<concrete>`
 specifier and provides default values for all fields:
 
+<!--versetest-->
 <!-- 110 -->
 ```verse
 # Abstract base class
@@ -1947,6 +1961,7 @@ interface type. Additionally, the actual type value assigned must be a
 concrete class—one marked with `<concrete>` and having all fields with
 defaults:
 
+<!--versetest-->
 <!-- 111 -->
 ```verse
 # Valid: concrete class with all defaults
@@ -1968,6 +1983,7 @@ When you have a `concrete_subtype`, you can instantiate it with the
 empty archetype `{}`, but you cannot provide field initializers—the
 concrete class must provide all necessary defaults:
 
+<!--versetest-->
 <!-- 112 -->
 ```verse
 entity_base := class<abstract>:
