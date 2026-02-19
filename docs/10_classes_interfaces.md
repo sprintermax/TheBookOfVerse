@@ -2164,7 +2164,6 @@ C:converter_interface(player, entity) = player_to_entity{}
 Parametric type definitions can be used as first-class values, allowing dynamic type application:
 
 <!-- NoCompile -->
--->
 <!-- 85 -->
 ```verse
 # Parametric class
