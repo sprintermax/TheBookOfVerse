@@ -1484,6 +1484,7 @@ logger := class:
 <!-- #> -->
 
 **Session tracking:**
+<!--versetest-->
 <!-- 56 -->
 ```verse
 player_session := class:

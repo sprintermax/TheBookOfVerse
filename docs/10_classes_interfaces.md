@@ -29,6 +29,7 @@ Class definitions occur at module scope. You cannot define a class
 inside another class, struct, interface, or function. Classes are
 top-level type definitions that establish the type system's structure:
 
+<!--versetest-->
 <!-- 01-->
 ```verse
 # Valid: class at module scope
@@ -45,6 +46,7 @@ my_module := module:
 The simplest form of a class groups related data together. Consider
 modeling a character in your game:
 
+<!--versetest-->
 <!-- 02-->
 ```verse
 character := class:
@@ -94,6 +96,7 @@ initialized. Fields can be passed to an archetype in any order.
 Classes become truly powerful when you add methods that operate on the
 class's data:
 
+<!--versetest-->
 <!-- 04-->
 ```verse
 character := class:
@@ -125,6 +128,7 @@ All methods in non-abstract classes must have implementations. Unlike
 interfaces (which can declare abstract methods), a concrete class
 method declaration without an implementation is an error:
 
+<!--versetest-->
 <!-- 05-->
 ```verse
 # Valid: method with implementation
@@ -180,6 +184,7 @@ Block clauses have access to all fields of the class, including
 `Self`, and can modify mutable fields. They execute in the order they
 appear in the class definition:
 
+<!--versetest-->
 <!-- 07-->
 ```verse
 multi_step_init := class:
@@ -257,6 +262,7 @@ character := class:
 
 You can capture `Self` when creating nested objects:
 
+<!--versetest-->
 <!-- 12-->
 ```verse
 container := class:
@@ -344,6 +350,7 @@ enabling polymorphic behavior.
    one other class, though it can implement multiple
    interfaces. Multiple class inheritance is not supported:
 
+<!--versetest-->
 <!-- 14-->
 ```verse
 base1 := class:
@@ -372,6 +379,7 @@ derived := class<abstract>(base1, interface1, interface2):
    with the same name as fields in their superclass. This prevents
    ambiguity and ensures clear data ownership:
 
+<!--versetest-->
 <!-- 15-->
 ```verse
 base := class:
@@ -386,6 +394,7 @@ base := class:
    use the exact same signature. Changing parameter types or return
    types creates a shadowing error:
 
+<!--versetest-->
 <!-- 16-->
 ```verse
 base := class:
@@ -404,6 +413,7 @@ Within a subclass, you can use the `super` keyword to refer to the
 superclass type. This is primarily used to access the superclass's
 implementation or to construct a superclass instance:
 
+<!--versetest-->
 <!-- 17-->
 ```verse
 entity := class:
@@ -432,6 +442,7 @@ implementation using the `(super:)` syntax. This is the primary way to
 invoke parent method implementations while adding or modifying
 behavior:
 
+<!--versetest-->
 <!-- 18-->
 ```verse
 base := class:
@@ -480,6 +491,7 @@ character := class(entity):
         set Stamina -= 1.0
 <#
 -->
+<!--versetest-->
 <!-- 19-->
 ```verse
 entity := class:
@@ -530,6 +542,7 @@ transactional_derived := class(transactional_base):
         set Counter += 1
 <#
 -->
+<!--versetest-->
 <!-- 20-->
 ```verse
 async_base := class:
@@ -564,6 +577,7 @@ When parent methods call other methods, virtual dispatch still applies
 based on the actual object type. This means `Self` binds to the
 derived instance even when calling through `(super:)`:
 
+<!--versetest-->
 <!-- 21-->
 ```verse
 base := class:
@@ -595,6 +609,7 @@ dispatch and calls the derived version.
 The `(super:)` syntax works with overloaded methods, calling the
 parent's version of the same overload:
 
+<!--versetest-->
 <!-- 22-->
 ```verse
 base := class:
@@ -618,6 +633,7 @@ derived := class(base):
 
 When overriding methods with `(super:)`, the return type can be a subtype of the parent's return type (covariant return types):
 
+<!--versetest-->
 <!-- 23-->
 ```verse
 base_type := class:
@@ -688,6 +704,7 @@ initialization scenarios.
 For simple cases where you just need to set field values, use
 archetype expressions directly:
 
+<!--versetest-->
 <!-- 25-->
 ```verse
 player := class:
@@ -849,6 +866,7 @@ must initialize the subclass fields first, then call the parent
 constructor using the qualified `<constructor>` syntax within the
 archetype:
 
+<!--versetest-->
 <!-- 29-->
 ```verse
 entity := class:
@@ -876,6 +894,7 @@ MakeCharacter<constructor>(Name:string, Class:string, Level:int) := character:
 
 Constructor functions can also forward to other constructors of the same class:
 
+<!--versetest-->
 <!-- 30-->
 ```verse
 player := class:
@@ -934,6 +953,7 @@ Understanding execution order is crucial for correct initialization:
 
 For delegating constructors to parent classes:
 
+<!--versetest-->
 <!-- 31-->
 ```verse
 base := class:
@@ -998,6 +1018,7 @@ In most contexts, you **cannot redefine names** that already exist in
 an enclosing scope. This applies to functions, variables, classes,
 interfaces, and modules:
 
+<!--versetest-->
 <!-- 32-->
 ```verse
 # ERROR 3532: Function at module level shadows class method
@@ -1075,6 +1096,7 @@ Using qualifiers, you can define *new methods* with the same name as
 inherited methods, creating multiple distinct methods in the same
 class:
 
+<!--versetest-->
 <!-- 35-->
 ```verse
 c := class<abstract> { F(X:int):int }
@@ -1120,6 +1142,7 @@ the class hierarchy.
 The `(super:)` qualifier works with qualified method names to call the
 parent class's implementation:
 
+<!--versetest-->
 <!-- 36-->
 ```verse
 i := interface { F(X:int):int }
@@ -1166,6 +1189,7 @@ When implementing multiple interfaces with methods of the same name,
 qualifiers disambiguate which interface's method you're implementing:
 
 
+<!--versetest-->
 <!-- 37-->
 ```verse
 i := interface:
@@ -1204,6 +1228,7 @@ makes your intent explicit.
 
 **Complex interface hierarchies:**
 
+<!--versetest-->
 <!-- 38-->
 ```verse
 i := interface:
@@ -1260,6 +1285,7 @@ separate implementations for both variants.
 Modules can be nested, and deeply qualified names reference members
 through the entire hierarchy:
 
+<!--versetest-->
 <!-- 39-->
 ```verse
 top := module:
@@ -1614,6 +1640,7 @@ for details on variance). This means instantiations follow the
 **opposite** subtyping direction:
 
 
+<!--versetest-->
 <!-- 54-->
 ```verse
 entity := class:
@@ -1824,6 +1851,7 @@ IntList := list_node(int){
 You cannot define a parametric type that directly aliases to a
 structural type containing itself:
 
+<!--versetest-->
 <!-- 71-->
 ```verse
 # Invalid: Direct array recursion
@@ -1901,6 +1929,7 @@ keep type checking tractable.
 
 Mutual recursion between multiple parametric types is not supported:
 
+<!--versetest-->
 <!-- 74-->
 ```verse
 # Invalid: Mutual recursion
@@ -1936,6 +1965,7 @@ combined_node(t:type) := class:
 You cannot inherit from a type variable or create recursive
 inheritance through parametric types:
 
+<!--versetest-->
 <!-- 76-->
 ```verse
 # Invalid: Inheriting from parametric self
@@ -2265,6 +2295,7 @@ The effect becomes part of the type's contract—all code constructing or workin
 
 You can create type aliases that simplify complex parametric type expressions:
 
+<!--versetest-->
 <!-- 92-->
 ```verse
 # Alias for map type
@@ -2287,6 +2318,7 @@ FilterValid(Items:optional_array(int)):[]int =
 
 **Structural type aliases:**
 
+<!--versetest-->
 <!-- 94-->
 ```verse
 # Function type aliases
@@ -2436,6 +2468,7 @@ UseConstrained(C:constrained(t) where t:subtype(base_class)):int =
 Classes support fine-grained control over member visibility through
 access specifiers:
 
+<!--versetest-->
 <!-- 100-->
 ```verse
 game_state := class:
@@ -2536,6 +2569,7 @@ Interfaces can also be marked with `<unique>`, which makes all
 instances of classes implementing that interface comparable by
 identity:
 
+<!--versetest-->
 <!-- 103-->
 ```verse
 component := interface<unique>:
@@ -2572,6 +2606,7 @@ The `<unique>` property propagates through interface inheritance. If a
 parent interface is marked `<unique>`, all child interfaces and
 classes implementing those interfaces automatically become comparable:
 
+<!--versetest-->
 <!-- 104-->
 ```verse
 base_component := interface<unique>:
@@ -2612,6 +2647,7 @@ C1 <> C2  # true - comparable due to base_component being unique
 When a class implements multiple interfaces, comparability is
 determined by whether ANY of the inherited interfaces is `<unique>`:
 
+<!--versetest-->
 <!-- 105-->
 ```verse
 updateable := interface:  # Not unique
@@ -2656,6 +2692,7 @@ containing object receives its own distinct instance. This guarantee
 applies even when the unique class is nested within complex parametric
 types:
 
+<!--versetest-->
 <!-- 106-->
 ```verse
 token := class<unique>:
@@ -2684,6 +2721,7 @@ C1.MyToken <> C2.MyToken  # true - each container has its own unique token
 This behavior extends to `<unique>` instances within arrays,
 optionals, tuples, and maps:
 
+<!--versetest-->
 <!-- 107-->
 ```verse
 item := class<unique>{}
@@ -2729,6 +2767,7 @@ if (ItemC := C.MaybeItem?, ItemD := D.MaybeItem?):
 The same principle applies when parametric classes contain unique
 instances in their fields:
 
+<!--versetest-->
 <!-- 108-->
 ```verse
 entity := class<unique>{}
@@ -2997,6 +3036,7 @@ work when the compiler can verify the cast is safe—that is, when the
 value type is a subtype of the target type:
 
 
+<!--versetest-->
 <!-- 117-->
 ```verse
 base := class:
@@ -3040,6 +3080,7 @@ The `<castable>` property is inherited by all subclasses. When you
 mark a class as `<castable>`, every class that inherits from it
 automatically becomes castable as well:
 
+<!--versetest-->
 <!-- 119-->
 ```verse
 base := class<castable>:
@@ -3064,6 +3105,7 @@ ProcessBase(Instance:base):void =
 **Important constraint:** Parametric types cannot be
 `<castable>`. This prevents type erasure issues at runtime:
 
+<!--versetest-->
 <!-- 120-->
 ```verse
 # Valid: non-parametric castable class
@@ -3170,6 +3212,31 @@ inheritance chain:
       GetName<override><final>():string = "GameObject"
       # Any subclass of game_object cannot override GetName
 ```
+
+For fields, `<final>` prevents modification through archetype
+construction. When a field is marked `<final>` and has a default value,
+that value is locked and cannot be changed when creating instances:
+
+<!-- versetest-->
+<!-- 124b-->
+```verse
+foo := class<computes>:
+    Val<final>:int = 0
+    X:int = 5
+
+# Valid: X can be changed during construction
+ValidFoo := foo{X := 10}
+
+# COMPILE ERROR: Cannot override final field Val
+# InvalidFoo := foo{Val := 10}
+```
+
+This restriction ensures that final fields maintain their guaranteed
+values throughout the object's lifetime. Final fields with default
+values act as immutable constants for each instance. If you need a
+field to be customizable during construction, don't mark it as
+`<final>`. Final fields must also provide a default value — you cannot
+declare a final field without initializing it.
 
 The related `<final_super>` specifier marks classes as terminal base
 classes — they can be inherited from but their subclasses cannot be
@@ -3297,6 +3364,7 @@ accessor logic.
 An interface can declare method signatures, provide default
 implementations, and define data members:
 
+<!--versetest-->
 <!-- 128-->
 ```verse
 damageable := interface:
@@ -3377,6 +3445,7 @@ Interfaces can declare data members that implementing classes must
 provide or inherit. These fields can be either immutable or mutable,
 and may include default values:
 
+<!--versetest-->
 <!-- 130-->
 ```verse
 # Interface with various field types
@@ -3413,6 +3482,7 @@ through construction parameters.
 Interfaces can provide complete method implementations that
 implementing classes inherit automatically:
 
+<!--versetest-->
 <!-- 131-->
 ```verse
 animated := interface:
@@ -3442,6 +3512,7 @@ interface provides a working default.
 Classes can override both fields and methods from interfaces to
 provide specialized implementations:
 
+<!--versetest-->
 <!-- 132-->
 ```verse
 base_stats := interface:
@@ -3478,6 +3549,7 @@ When a class implements multiple interfaces that declare fields or
 methods with the same name, you must use qualified names to
 disambiguate:
 
+<!--versetest-->
 <!-- 133-->
 ```verse
 magical := interface:
