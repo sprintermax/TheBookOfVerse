@@ -177,19 +177,6 @@ Verse provides first-class support for reactive programming through live variabl
 
 <!--versetest
 Log(:string)<transacts>:void={}
-M()<transacts>:void =
-    var MaxHealth:int = 100
-    var Damage:int = 0
-    var live Health:int = MaxHealth - Damage
-
-    # Health automatically updates when dependencies change
-    set Damage = 20      # Health becomes 80
-    set MaxHealth = 150  # Health becomes 130
-
-    # Reactive constructs for event handling
-    when(Health < 25):
-        Log("Low health warning!")
-<#
 -->
 <!-- 07 -->
 ```verse
@@ -205,7 +192,6 @@ set MaxHealth = 150  # Health becomes 130
 when(Health < 25):
     Log("Low health warning!")
 ```
-<!-- #> -->
 
 Welcome to Verse—a language built not just for today's games, but for tomorrow's metaverse.
 
@@ -425,32 +411,7 @@ Verse has a set of naming conventions that make code readable and predictable. W
 
 Identifiers should be in PascalCase (CamelCase starting with uppercase):
 
-<!--versetest
-player_character := class:
-    Name:string
-    Level:int
-inventory_item := struct:
-    ItemId:int
-    Quantity:int
-game_state := enum:
-    main_menu
-    in_game
-    paused
-    game_over
-PlayerDatabase(id:int)<decides>:player_character=player_character{Name:="", Level:=1}
-# Variables and constants use PascalCase
-PlayerHealth:int = 100
-MaxInventorySize:int = 50
-IsGameActive:logic = true
-
-# Functions use PascalCase
-CalculateDamage(Base:float, Multiplier:float):float =
-    Base * Multiplier
-
-GetPlayerName(Id:int)<decides>:string =
-    PlayerDatabase[Id].Name
-<#
--->
+<!--versetest-->
 <!-- 09 -->
 ```verse
 # Variables and constants use PascalCase
@@ -481,7 +442,6 @@ game_state := enum:
     paused
     game_over
 ```
-<!-- #> -->
 
 Generic type parameters use single lowercase letters or short descriptive names:
 
@@ -513,19 +473,7 @@ using { /Verse.org/Random }
 
 Class and struct fields use PascalCase, and methods follow the same PascalCase convention as functions:
 
-<!--versetest
-player := class:
-    Name:string          # PascalCase for fields
-    var Health:float= 0.0
-
-    # Methods use PascalCase like functions
-    TakeDamage(Amount:float):void =
-        set Health = Max(0.0, Health - Amount)
-
-    IsAlive():logic =
-        logic{Health > 0.0}
-<#
--->
+<!--versetest-->
 <!-- 12 -->
 ```verse
 player := class:
@@ -539,7 +487,6 @@ player := class:
     IsAlive():logic =
         logic{Health > 0.0}
 ```
-<!-- #> -->
 
 ## Code Formatting
 
@@ -556,22 +503,6 @@ ProcessItem(Item:int)<transacts>:void = {}
 UpdateDisplay()<transacts>:void = {}
 ImplementationHere()<transacts>:void = {}
 
-M()<transacts>:void =
-    if (Condition[]):
-        DoSomething()
-        DoSomethingElse()
-
-    for (Item : Inventory):
-        ProcessItem(Item)
-        UpdateDisplay()
-
-class_definition := class:
-    Field1:int
-    Field2:string
-
-    Method():void =
-        ImplementationHere()
-<#
 -->
 <!-- 13 -->
 ```verse
@@ -590,7 +521,6 @@ class_definition := class:
     Method():void =
         ImplementationHere()
 ```
-<!-- #> -->
 
 Complex expressions benefit from clear formatting that shows structure:
 
@@ -600,35 +530,12 @@ BaseDamage:float = 100.0
 LevelMultiplier:float = 1.5
 BonusPercentage:float = 10.0
 rarity_type := enum{common; uncommon; rare; epic; legendary}
-assert:
-    Player:player_type = player_type{}
-    Rarity:rarity_type = rarity_type.rare
-
-    # Multi-line conditionals
-    Result := if (Player.Health > 50):
-        "healthy"
-    else if (Player.Health > 20):
-        "injured"
-    else:
-        "critical"
-
-    # Chained operations with clear precedence
-    FinalDamage :=
-        BaseDamage *
-        LevelMultiplier *
-        (1.0 + BonusPercentage / 100.0)
-
-    # Pattern matching with aligned cases
-    DamageMultiplier := case(Rarity):
-        rarity_type.common => 1.0
-        rarity_type.uncommon => 1.5
-        rarity_type.rare => 2.0
-        rarity_type.epic => 3.0
-        rarity_type.legendary => 5.0
-<#
 -->
 <!-- 14 -->
 ```verse
+Player:player_type = player_type{}
+Rarity:rarity_type = rarity_type.rare
+
 # Multi-line conditionals
 Result := if (Player.Health > 50):
     "healthy"
@@ -651,7 +558,6 @@ DamageMultiplier := case(Rarity):
     rarity_type.epic => 3.0
     rarity_type.legendary => 5.0
 ```
-<!-- #> -->
 
 Functions follow a consistent pattern with effects and return types clearly specified:
 
@@ -710,15 +616,7 @@ Result := BaseValue <# original amount #> * Multiplier <# scaling factor #> + Bo
 
 The same can be used to write multi-line block comments, making them ideal for explaining complex algorithms or providing detailed context:
 
-<!--versetest
-<# This function implements the quadratic damage falloff formula
-   used throughout the game. The falloff ensures that damage
-   decreases smoothly with distance, creating strategic positioning
-   choices for players. #>
-CalculateFalloffDamage(Distance:float, MaxDamage:float):float =
-    MaxDamage  # Implementation here
-<#
--->
+<!--versetest-->
 <!-- 18 -->
 ```verse
 <# This function implements the quadratic damage falloff formula
@@ -726,9 +624,8 @@ CalculateFalloffDamage(Distance:float, MaxDamage:float):float =
    decreases smoothly with distance, creating strategic positioning
    choices for players. #>
 CalculateFalloffDamage(Distance:float, MaxDamage:float):float =
-    # Implementation here
+    MaxDamage  # Implementation here
 ```
-<!-- #> -->
 
 Block comments nest, which allows you to temporarily disable code that already contains comments without having to remove or modify existing documentation:
 
@@ -817,22 +714,16 @@ You can even mix styles when it makes sense:
 ComplexCondition()<transacts><decides>:void = {}
 AnotherCheck()<transacts><decides>:void = {}
 YetAnotherValidation()<transacts><decides>:void = {}
-M()<transacts>:void =
-    Result := if:
-        ComplexCondition[] and
-        AnotherCheck[] and
-        YetAnotherValidation[]
-    then { "condition met" } else { "condition not met" }
-<#
 -->
 <!-- 25 -->
 ```verse
 Result := if:
-    ComplexCondition() and
-    AnotherCheck() and
-    YetAnotherValidation()
+    ComplexCondition[] and
+    AnotherCheck[] and
+    YetAnotherValidation[]
 then { "condition met" } else { "condition not met" }
 ```
-<!-- #> -->
 
-All these forms produce the same result. The choice between them is about readability and context. Use braces when working with existing brace-heavy code, indentation for cleaner vertical layouts, and inline forms for simple expressions. This flexibility lets you write code that reads naturally.
+All these forms produce the same result. The choice between them is about readability and context. 
+Use braces when working with existing brace-heavy code, indentation for cleaner vertical layouts,
+and inline forms for simple expressions. This flexibility lets you write code that reads naturally.

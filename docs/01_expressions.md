@@ -16,7 +16,10 @@ provides lightweight data aggregation.
 
 ### Basic Values
 
-Literals are source code representations of constant values. Verse provides literals for all its primitive types: integers, floats, characters, strings, booleans, and functions. Each literal type has specific syntax rules that determine what values can be expressed and how they're interpreted.
+Literals are source code representations of constant values. 
+Verse provides literals for all its primitive types: integers, floats, characters, 
+strings, booleans, and functions. 
+Each literal type has specific syntax rules that determine what values can be expressed and how they're interpreted.
 
 <!--versetest
 point := struct{X:float, Y:float}
@@ -108,40 +111,24 @@ Maximum := 1.7976931348623158e+308    # OK: Maximum finite float
 
 However, **runtime** float arithmetic follows standard IEEE 754 semantics:
 
-<!--versetest
-assert:
-    # Runtime overflow produces infinity
-    Large := 1.0e308
-    Overflow := Large * 10.0
-    not(Overflow = Large)  # Now infinity
-
-    # Division by zero produces infinity
-    PosInf := 1.0 / 0.0
-    NegInf := -1.0 / 0.0
-    true
-
-    # Underflow produces denormalized numbers or zero
-    Small := 1.0e-320
-    Smaller := Small / 1.0e10
-    Smaller >= 0.0  # Denorm or zero, not an error
--->
+<!--versetest-->
+<!-- 666 -->
 ```verse
-# Runtime overflow → infinity (not an error)
+# Runtime overflow produces infinity
 Large := 1.0e308
-Overflow := Large * 10.0    # Produces infinity
+Overflow := Large * 10.0    # Overflow produces infinity
 
-# Runtime underflow → denormalized number or zero (not an error)
+# Division by zero produces infinity
+PosInf := 1.0 / 0.0
+NegInf := -1.0 / 0.0
+
+# Underflow produces denormalized numbers or zero
 Small := 1.0e-320
 Smaller := Small / 1.0e10   # Underflows gracefully
-
-# Division by zero → infinity (not an error for floats)
-Inf := 1.0 / 0.0            # Positive infinity
 ```
 
-**Note:** Operations that would produce NaN (like `0.0 / 0.0` or `Inf - Inf`)
+Operations that would produce NaN (like `0.0 / 0.0` or `Inf - Inf`)
 cause runtime errors rather than producing NaN values.
-
-
 
 #### Character Literals
 
@@ -540,7 +527,7 @@ Data[ComputeIndex()]    # Dynamic index computation
 ```
 <!-- #> -->
 
-**Important:** The square bracket syntax `Func[]` is **required** for calling
+The square bracket syntax `Func[]` is **required** for calling
 functions that may fail (those with the `<decides>` effect). Regular
 parentheses `Func()` are used for functions that always succeed. Array
 indexing also uses `[]` because it can fail when the index is out of bounds.
@@ -941,19 +928,14 @@ When you use `:=` inside `and`, `or`, or `not` expressions, those
 bindings are only evaluated for short-circuit control flow and are **not**
 accessible afterward:
 
-<!--versetest
-assert:
-    Arr1 := array{10, 20}
-    Arr2 := array{30, 40}
-    # This compiles but X and Y are not accessible in the then branch
-    if ((X := Arr1[0]) and (Y := Arr2[0])):
-        # X and Y are NOT accessible here
-        true
--->
+<!--NoCompile-->
+<!-- 998 -->
 ```verse
-# Bindings in logical operations are NOT accessible
+Arr:[]int = array{10, 20}
+
+# ERROR: Bindings in logical operations are NOT accessible
 if ((X := Arr[0]) and (Y := Arr[1])):
-    # ERROR: X and Y are not bound here
+    # X and Y are not bound here - this will cause a compilation error!
     Z := X + Y
 
 # Simple if binding DOES work
@@ -1001,8 +983,9 @@ assert:
     # Chain checks BOTH comparisons
     Value2:int = 75
     not(10 <= Value2 <= 50)  # Fails because 75 > 50
+<#
 -->
-<!--NoCompile-->
+<!-- 999 -->
 ```verse
 X := 0 < 10
 # X equals 0 (the left operand)
@@ -1013,6 +996,7 @@ X := 0 < 10
 #   - Value <= 100 (upper bound)
 # Returns 0 (leftmost operand) if both succeed
 ```
+<!-- #> -->
 
 The comparison chain `A <= B <= C` is **not** evaluated as `(A <= B) <= C`.
 Instead, it's special syntax that checks both `A <= B` **and** `B <= C`, while
@@ -1041,15 +1025,15 @@ When dividing integers, `X / Y` can fail if `Y` is `0`, allowing you to handle
 this case safely:
 
 <!--versetest
+X:int = 10
+Y:int = 0
 assert:
-    X:int = 10
-    Y:int = 0
-    # Integer division by zero fails
     not(Result := X / Y)
 -->
+<!-- 997 -->
 ```verse
 if (Result := X / Y):
-    Print("Result: {Result}")
+    Print("Division succeeded")
 else:
     Print("Cannot divide by zero")
 ```
@@ -1088,11 +1072,12 @@ Value:int = 100
 Index:int = 0
 Key:string = "key"
 MappedValue:string = "value"
-F()<transacts><decides>:void=
+assert:
     var X:int = 0
     var Obj:c = GetObj()
     var Arr:[]int = GetArr()
     var Map:[string]string = GetMap()
+
     set X = 10
     set Obj.Field = Value
     set Arr[Index] = Element
@@ -1230,20 +1215,19 @@ Commas separate distinct arguments in the standard way:
 
 <!--versetest
 Add(A:int, B:int):int = A + B
-F():void=
-    Sum := Add(10, 20)
-<#
 -->
 <!-- 55 -->
 ```verse
 Sum := Add(10, 20)                # Two separate arguments
-# Sum = 30
+Sum = 30
 ```
-<!-- #> -->
 
 Semicolons are *not allowed* in parameter lists - you must use commas:
 
-<!--versetest-->
+<!--versetest
+assert_semantic_error(3540):
+    InvalidFunc(A:int; B:int):void = {}
+-->
 <!-- 56 -->
 ```verse
 # VALID: Comma-separated parameters
@@ -1257,13 +1241,17 @@ ValidFunc(A:int, B:int):void = {}
 
 At the top level of a module, semicolons and commas are *interchangeable* - both simply separate definitions:
 
-<!--NoCompile-->
+<!--versetest
+X:int = 0, Y:int = 0
+<#
+-->
 <!-- 57 -->
 ```verse
 # Both valid and equivalent
 X:int = 0; Y:int = 0
 X:int = 0, Y:int = 0
 ```
+<!-- #> -->
 
 In `logic{}` constructor - both semicolons and commas work, but with
 different semantics based on the construct's behavior:

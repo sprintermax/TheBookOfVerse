@@ -29,7 +29,10 @@ Most intrinsic functions *cannot be referenced as first-class
 values*. This means you can call them directly, but you cannot store
 them in variables or pass them as function arguments:
 
-<!--versetest-->
+<!--versetest
+assert_semantic_error(3502):
+    F := Abs
+-->
 <!-- 01 -->
 ```verse
 Result := Abs(-42)  # Returns 42
@@ -335,16 +338,13 @@ both `int` and `float` types.
 The `Abs()` function returns the absolute value of a number—its
 distance from zero without regard to sign:
 
-<!--versetest
-<#
--->
+<!--NoCompile-->
 <!-- 17 -->
 ```verse
 # Signatures
 Abs(X:int):int
 Abs(X:float):float
 ```
-<!-- #> -->
 
 <!--versetest-->
 <!-- 18 -->
@@ -357,9 +357,7 @@ Abs(3.14) # Returns 3.14
 
 The `Min()` and `Max()` functions return the minimum or maximum of two values:
 
-<!--versetest
-<#
--->
+<!--NoCompile-->
 <!-- 19 -->
 ```verse
 # Signatures
@@ -368,7 +366,6 @@ Min(A:float, B:float):float
 Max(A:int, B:int):int
 Max(A:float, B:float):float
 ```
-<!-- #> -->
 
 <!--versetest-->
 <!-- 20 -->
@@ -387,9 +384,7 @@ Min(Inf, Inf)      # Returns Inf
 
 Verse provides multiple rounding functions that convert floats to integers with different rounding strategies:
 
-<!--versetest
-<#
--->
+<!--NoCompile-->
 <!-- 21 -->
 ```verse
 # Signatures
@@ -398,7 +393,6 @@ Ceil(X:float)<reads><decides>:int    # Round up
 Round(X:float)<reads><decides>:int   # Round to nearest even (IEEE-754)
 Int(X:float)<reads><decides>:int     # Truncate toward zero
 ```
-<!-- #> -->
 
 Round to nearest even (ties go to even):
 
@@ -619,13 +613,9 @@ assert:
     Dividend:int = 15
     Divisor:int = 4
     Dividend = Quotient[Dividend, Divisor] * Divisor + Mod[Dividend, Divisor]
-
-assert:
     Dividend:int = -15
     Divisor:int = 4
     Dividend = Quotient[Dividend, Divisor] * Divisor + Mod[Dividend, Divisor]
-
-assert:
     Dividend:int = -1
     Divisor:int = -2
     Dividend = Quotient[Dividend, Divisor] * Divisor + Mod[Dividend, Divisor]
@@ -694,17 +684,10 @@ assert:
     (5.0).IsFinite[]
     (0.0).IsFinite[]
     (-100.0).IsFinite[]
-
-assert:
     not (Inf).IsFinite[]
-assert:
     not (-Inf).IsFinite[]
-assert:
     not (NaN).IsFinite[]
-
-assert:
     (15.16).IsFinite[] = 15.16
-
 <#
 -->
 <!-- 33 -->
@@ -1128,7 +1111,6 @@ Y:?string = CreateDefault(string)  # T = string, returns false
 
 All Verse types can be type values:
 
-
 <!-- TODO: Cannot convert - type expressions like []int, [string]int, tuple(), ?int,
      int->string, subtype(), and type{} cannot be assigned to variables at module scope -->
 
@@ -1271,7 +1253,7 @@ assert:
     Y:?float = MaybeValue(3.14, true)
 <#
 -->
-<!-- 81a -->
+<!-- 817 -->
 ```verse
 # return type `t` must be the same type as the `Value` param type
 MaybeValue(Value:t, Condition:logic where t:type):?t =
@@ -1283,24 +1265,34 @@ Y:?float = MaybeValue(3.14, true)  # Returns option{3.14} as ?float
 ```
 <!-- #> -->
 
-<!-- TODO: Cannot test - snippet ID "81b" is non-numeric and not supported by extract tools -->
 
-<!--NoCompile-->
-<!-- 81b -->
-```verse
-# `Value` param needs to match the type given on the `T` param. Same for return
-MaybeValue(T:param_type, Value:t, Condition:logic where param_type:type):?T =
+<!--versetest
+MaybeValueExplicit(T:type, Value:t, Condition:logic where t:subtype(T)):?T =
     if (Condition?):
-        return option{Value} # Return the value of param type
+        option{Value}
     else:
-        return false # returns empty optional
+        false
+
+assert:
+    X:?int = MaybeValueExplicit(int, 5, false)
+    Y:?float = MaybeValueExplicit(float, 3.14, true)
+<#
+-->
+<!-- 818 -->
+```verse
+# Alternative: explicitly pass the type parameter
+MaybeValueExplicit(T:type, Value:t, Condition:logic where t:subtype(T)):?T =
+    if (Condition?):
+        option{Value}
+    else:
+        false
 
 # Usage
-X:?int = MaybeValue(int, 5, false)  # Returns false as ?int
-Y:?float = MaybeValue(float, 3.14, true)  # Returns option{3.14} as ?float
-Z:?int = MaybeValue(int, 3.14, true) # Err: params types mismatch
+X:?int = MaybeValueExplicit(int, 5, false)  # Returns false as ?int
+Y:?float = MaybeValueExplicit(float, 3.14, true)  # Returns option{3.14} as ?float
+# Z:?int = MaybeValueExplicit(int, 3.14, true) # ERROR: float not subtype of int
 ```
-
+<!-- #> -->
 
 This pattern is particularly useful for generic containers and factory
 functions that may or may not be able to produce a value.
@@ -1335,15 +1327,12 @@ While `type` enables powerful abstractions, there are some limitations:
 
 **Cannot construct arbitrary types generically:**
 
-<!--versetest
-<#
--->
+<!--NoCompile-->
 <!-- 83 -->
 ```verse
 # Cannot do this - no way to construct a value of arbitrary type t
-# MakeValue(T:type):T = ???  # What would this return for T=int? T=string?
+MakeValue(T:type):T = ???  # What would this return for T=int? T=string?
 ```
-<!-- #> -->
 
 **Cannot inspect type structure at runtime:**
 
@@ -1353,7 +1342,7 @@ While `type` enables powerful abstractions, there are some limitations:
 <!-- 84 -->
 ```verse
 # Cannot do this - no runtime type introspection
-# GetFieldNames(T:type):string = ???
+GetFieldNames(T:type):string = ???
 ```
 <!-- #> -->
 
@@ -1376,7 +1365,7 @@ Identity(X:t where t:type):t = X
 Identity(42)
 
 # ERROR: t cannot be inferred from no arguments
-# MakeDefault(where t:type):t = ???
+MakeDefault(where t:type):t = ???
 ```
 <!-- #> -->
 

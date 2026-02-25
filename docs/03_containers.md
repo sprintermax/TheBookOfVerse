@@ -642,7 +642,6 @@ if (Updated := NumArray.Remove[1,1]):
 `ReplaceFirstElement()` replace first occurrence:
 
 <!--NoCompile-->
-<!-- 00 -->
 ```verse
 Array.ReplaceFirstElement(OldValue:t, NewValue:t where t:subtype(comparable))<decides>:[]t
 ```
@@ -662,7 +661,6 @@ if (not NumArray.ReplaceFirstElement[0, 99]):
 `ReplaceAllElements()` replace all occurrences:
 
 <!--NoCompile-->
-<!-- 00 -->
 ```verse
 Array.ReplaceAllElements(OldValue:t, NewValue:t where t:subtype(comparable)):[]t
 ```
@@ -682,7 +680,6 @@ Same := NumArray.ReplaceAllElements(0, 99)
 `ReplaceElement()` replaces at specific index:
 
 <!--NoCompile-->
-<!-- 00 -->
 ```verse
 Array.ReplaceElement(Index:int, NewValue:t)<decides>:[]t
 ```
@@ -1545,14 +1542,11 @@ player := class<unique> {}
 
 F():void=
     var GameData:weak_map(player, int) = map{}
-
     AttemptUpdate():void =
         if:
             set GameData[player{}] = 100
             set GameData[player{}] = 200
             false?
-
-
     AttemptUpdate()
 <#
 -->
@@ -1573,56 +1567,3 @@ AttemptUpdate():void =
 <!-- #> -->
 
 This applies to complete map replacements (for local variables), individual entries, and partial field updates.
-
-### Island Limits
-
-!!! warning "Important"
-    Current island limits and rules may vary and not match exactly the values shown bellow
-
-There is a **limit on the number of persistent `weak_map` variables** per island. In the standard environment, this limit is 4 persistent weak_maps. Exceeding this limit produces an error:
-
-<!--versetest
-key_class := class<unique><allocates><computes><persistent><module_scoped_var_weak_map_key> {}
-value_class := class<final><persistable> {}
-
-var Map1:weak_map(key_class, int) = map{}
-var Map2:weak_map(key_class, int) = map{}
-var Map3:weak_map(key_class, value_class) = map{}
-<#
--->
-<!-- 83 -->
-```verse
-key_class := class<unique><allocates><computes><persistent><module_scoped_var_weak_map_key> {}
-
-var Map1:weak_map(key_class, int) = map{}  # OK
-var Map2:weak_map(key_class, int) = map{}  # OK
-var Map3:weak_map(key_class, int) = map{}  # OK
-var Map4:weak_map(key_class, int) = map{}  # OK
-
-# ERROR 3502: Exceeds island limit
-# var Map5:weak_map(key_class, int) = map{}
-```
-<!-- #> -->
-
-**Exception:** If the value type is a class (not a primitive or struct), the weak_map doesn't count toward this limit:
-
-<!--versetest
-key_class := class<unique><allocates><computes><persistent><module_scoped_var_weak_map_key> {}
-value_class := class<final><persistable> {}
-
-var Map1:weak_map(key_class, int) = map{}
-var Map2:weak_map(key_class, int) = map{}
-var Map3:weak_map(key_class, int) = map{}
-var Map4:weak_map(key_class, value_class) = map{}
-<#
--->
-<!-- 84 -->
-```verse
-value_class := class<final><persistable> {}
-
-var Map1:weak_map(key_class, int) = map{}       # Counts (1/4)
-var Map2:weak_map(key_class, int) = map{}       # Counts (2/4)
-var Map3:weak_map(key_class, int) = map{}       # Counts (3/4)
-var Map4:weak_map(key_class, value_class) = map{}  # Doesn't count (class value)
-```
-<!-- #> -->
