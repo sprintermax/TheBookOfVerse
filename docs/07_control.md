@@ -304,13 +304,6 @@ direction := enum:
     South
     East
     West
-
-GetVector(Dir:direction):tuple(int, int) =
-    case (Dir):
-        direction.North => (0, 1)
-        direction.South => (0, -1)
-        direction.East => (1, 0)
-        direction.West => (-1, 0)
 -->
 <!-- 17 -->
 ```verse
@@ -342,6 +335,11 @@ GetVectorWithUnreachable(Dir:direction):tuple(int, int) =
         direction.East => (1, 0)
         direction.West => (-1, 0)
         _ => (0, 0)
+
+assert:
+    # Test that the function works despite unreachable wildcard
+    GetVectorWithUnreachable(direction.North) = (0, 1)
+<#
 -->
 <!-- 18 -->
 ```verse
@@ -352,16 +350,12 @@ GetVectorWithUnreachable(Dir:direction):tuple(int, int) =
         direction.West => (-1, 0)
         _ => (0, 0)  # Warning: all cases already covered
 ```
+<!-- #> -->
 
 Incomplete case coverage is allowed in a `<decides>` context:
 
 <!--versetest
 direction := enum{  North, South, East, West}
-
-GetPrimaryDirection2(Dir:direction)<decides>:string =
-    case (Dir):
-        direction.North => "Primary"
-        # Other directions cause function to fail
 -->
 <!-- 19 -->
 ```verse
@@ -386,13 +380,6 @@ UpdatePlayerPositions()<transacts>:void={}
 CheckCollisions()<transacts>:void={}
 RenderFrame()<transacts>:void={}
 GameOver()<decides><transacts>:void={}
-
-GameLoop()<transacts>:void =
-    loop:
-        UpdatePlayerPositions()
-        CheckCollisions()
-        RenderFrame()
-        if (GameOver[]). break
 -->
 <!-- 22 -->
 ```verse
@@ -433,14 +420,13 @@ their side effects.
 When `break` appears in nested loops, it exits only the innermost
 enclosing loop:
 
-<!-- BUG: Stuck in the interpreter -->
-<!--NoCompile-->
+<!--versetest-->
 <!-- 57 -->
 ```verse
 var Outer:int = 0
-var Inner:int = 0
 loop:
     set Outer += 1
+    var Inner:int = 0
     loop:
         set Inner += 1
         if (Inner = 5):
@@ -454,13 +440,22 @@ a code block, not as part of a complex expression.  A loop must
 contain at least one non-break statement. Finally, using `break`
 outside a `loop` produces an error:
 
-<!--NoCompile-->
+<!--versetest
+ShouldStop()<decides>:void={}
+
+assert_semantic_error(3506, 3581):
+    ProcessData():void =
+       if (ShouldStop[]):
+               break      # Error
+<#
+-->
 <!-- 58 -->
 ```verse
 ProcessData():void =
    if (ShouldStop[]):
            break      # Error
 ```
+<!-- #> -->
 ## For Expressions
 
 The `for` expression iterates over collections, ranges, and other
@@ -515,17 +510,12 @@ simple operations:
 <!--versetest
 Values:[]int = array{1, 2, 3}
 DoSomething(V:int):void = {}
-
-M():void =
-    for (V : Values). DoSomething(V)
-<#
 -->
 <!-- 26 -->
 ```verse
 # Single-line dot style
 for (V : Values). DoSomething(V)
 ```
-<!-- #> -->
 
 **Index and Value Pairs:**
 
@@ -534,7 +524,6 @@ using the pair syntax `Index -> Value` or `Key -> Value`:
 
 <!--versetest
 player:=struct{ Name:string }
-<#
 -->
 <!-- 28 -->
 ```verse
@@ -542,7 +531,6 @@ PrintRoster(Players:[]player):void =
     for (Index -> Player : Players):
         Print("Player {Index}: {Player.Name}")
 ```
-<!-- #> -->
 
 The index is zero-based, matching Verse's array indexing convention.
 
@@ -644,7 +632,6 @@ failure contexts, as they can naturally filter:
 <!--versetest
 player:=struct{ Name:string }
 GetScore(P:player)<computes>:int=0
-<#
 -->
 <!-- 34 -->
 ```verse
@@ -652,7 +639,6 @@ GetHighScorers(Players:[]player):[]player =
     for (Player : Players, Score := GetScore(Player), Score > 1000):
         Player  # Only players with score > 1000 are included
 ```
-<!-- #> -->
 
 When any expression in the iteration header fails, that iteration is
 skipped. This allows elegant filtering without explicit `if`
@@ -660,7 +646,6 @@ statements:
 
 <!--versetest
 item:=struct{Price:float}
-<#
 -->
 <!-- 35 -->
 ```verse
@@ -669,7 +654,6 @@ AffordableItems(Items:[]item, Budget:float):[]float =
     for (Item : Items, Item.Price <= Budget):
         Item.Price * 1.1  # Apply 10% markup
 ```
-<!-- #> -->
 
 **For as an Expression:**
 
@@ -677,7 +661,6 @@ Like other control flow constructs, `for` is an expression. When the body produc
 
 <!--versetest
 player:=struct{Name:string}
-<#
 -->
 <!-- 36 -->
 ```verse
@@ -686,7 +669,6 @@ GetNames(Players:[]player):[]string =
     for (Player : Players):
         Player.Name  # Each iteration produces a string
 ```
-<!-- #> -->
 
 This makes `for` a powerful tool for transforming collections without
 explicit accumulator variables.
@@ -706,7 +688,6 @@ logic or failure-based filtering to achieve similar results:
 <!--versetest
 item:=struct{IsValid:logic}
 ProcessItem(I:item):void={}
-<#
 -->
 <!-- 38 -->
 ```verse
@@ -722,7 +703,6 @@ ProcessValidItems(Items:[]item):void =
     for (Item : Items, Item.IsValid?):
         ProcessItem(Item)  # Only valid items reach here
 ```
-<!-- #> -->
 
 
 **Range Iteration.** The range operator `..` provides numeric
@@ -823,17 +803,7 @@ The `return` statement provides explicit early exits from functions,
 allowing you to terminate execution and return a value before reaching
 the end of the function body:
 
-<!--versetest
-ValidateInput(Value:int):string =
-    if (Value < 0):
-        return "Error: Negative value"
-
-    if (Value > 1000):
-        return "Error: Value too large"
-
-    "Valid"
-<#
--->
+<!--versetest-->
 <!-- 48 -->
 ```verse
 ValidateInput(Value:int):string =
@@ -845,7 +815,6 @@ ValidateInput(Value:int):string =
 
     "Valid"     # Implicit return
 ```
-<!-- #> -->
 
 Return statements can only appear in specific positions within your
 code—they must be in "tail position," meaning they must be the last
@@ -854,8 +823,7 @@ ensures predictable control flow:
 
 <!--versetest
 GetOrder(:int)<transacts><decides>:order=order{}
-order := class<allocates>{ IsValid()<decides>:logic=false }
-<#
+order := class<allocates>{ IsValid()<decides><transacts>:logic=false }
 -->
 <!-- 49 -->
 ```verse
@@ -873,7 +841,6 @@ GetStatus(Value:int):string =
     else:
         return "Non-positive"
 ```
-<!-- #> -->
 
 Verse functions implicitly return the value of their last expression,
 so `return` is only needed for early exits:
@@ -883,7 +850,6 @@ CalculateBonus(Score:int):int={
     if(Score<100)then{return 0}
     Score*10
 }
-<#
 -->
 <!-- 51 -->
 ```verse
@@ -897,7 +863,6 @@ GetDiscount(Price:float):float =
 
     Price * 0.1  # Implicit return with 10% discount
 ```
-<!-- #> -->
 
 In functions with the `<decides>` effect, `return` allows you to
 provide successful values from early exits, while still allowing other
@@ -907,7 +872,6 @@ paths to fail:
 config:=struct{MaxRetries:int}
 GetConfig()<transacts><decides>:config=config{MaxRetries:=3}
 AttemptOperation(Retry:int)<computes><decides>:string="success"
-<#
 -->
 <!-- 52 -->
 ```verse
@@ -918,7 +882,6 @@ RetryableOperation()<transacts>:string =
                 return Result  # Success - exit immediately
     "Failed" # All retries exhausted
 ```
-<!-- #> -->
 
 This pattern is common for search operations where you want to return
 immediately upon finding a match, but fail if no match is found.
@@ -935,7 +898,6 @@ CloseFile(P:int)<computes>:void={}
 ReadFile(P:int)<computes>:?string=false
 ProcessContents(P:string)<computes><decides>:void={}
 SaveResults()<computes><decides>:void={}
-<#
 -->
 <!-- 61 -->
 ```verse
@@ -948,16 +910,30 @@ ProcessFile(FileName:string)<transacts><decides>:void =
     ProcessContents[Contents]
     SaveResults[]
 ```
-<!-- #> -->
 
 Deferred code executes when the scope exits successfully or through
 explicit control flow like `return`:
 
 <!--versetest
-OpenConnection():int=0
-CloseConnection(Id:int):void={}
-Query(Id:int)<decides>:string="result"
-ProcessResult(R:string):void={}
+OpenConnection()<transacts>:int=0
+CloseConnection(Id:int)<transacts>:void={}
+Query(Id:int)<decides><transacts>:string="result"
+ProcessResult(R:string)<transacts>:void={}
+
+ProcessQuery()<transacts>:void =
+    ConnId := OpenConnection()
+    defer:
+        CloseConnection(ConnId)  # Cleanup always needed
+
+    for (Attempt := 1..5):
+        if (Result := Query[ConnId]):
+            ProcessResult(Result)
+            return  # defer executes after return being called
+
+    # defer executes before leaving the function scope on success
+
+assert:
+    # ProcessQuery is defined and demonstrates defer with return
 <#
 -->
 <!-- 62 -->
@@ -985,7 +961,6 @@ the scheduling of defer blocks:
 AcquireResource()<transacts><decides>:int=0
 ReleaseResource(Id:int)<transacts>:void={}
 RiskyOperation(Id:int)<transacts><decides>:void={}
-<#
 -->
 <!-- 63 -->
 ```verse
@@ -997,7 +972,6 @@ ExampleWithFailure()<transacts><decides>:void =
     RiskyOperation[ResourceId] # This fails!
     # defer does NOT run - entire scope was speculative and rolled back
 ```
-<!-- #> -->
 
 When the `RiskyOperation` fails, the entire function also fails, and
 speculative execution undoes everything—including the defer
@@ -1019,7 +993,6 @@ CloseDatabase(Id:int)<transacts>:void={}
 BeginTransaction(Id:int)<decides><transacts>:int=0
 CommitTransaction(Id:int)<transacts>:void={}
 DoWork()<transacts><decides>:void={}
-<#
 -->
 <!-- 64 -->
 ```verse
@@ -1035,14 +1008,34 @@ DatabaseTransaction()<transacts><decides>:void =
     DoWork[]  # Work happens with both resources active
     # Defers execute: CommitTransaction, then CloseDatabase
 ```
-<!-- #> -->
 
 **Defers and Async Cancellation:**
 
 Deferred code also executes when async operations are cancelled, such
 as when a `race` completes or a `spawn` is interrupted:
 
-<!--NoCompile-->
+<!--versetest
+AcquireResource()<transacts>:int=0
+ReleaseResource(Resource:int)<transacts>:void={}
+LongRunningTask(Resource:int)<suspends><transacts>:void={}
+
+ProcessWithTimeout()<suspends><transacts>:void =
+    race:
+        block:
+            Resource := AcquireResource()
+            defer:
+                ReleaseResource(Resource)  # Runs if cancelled
+
+            LongRunningTask(Resource)
+
+        block:
+            Sleep(10.0)  # Timeout
+    # If timeout wins, first block is cancelled and defer runs
+
+assert:
+    # ProcessWithTimeout demonstrates defer with async cancellation
+<#
+-->
 <!-- 65 -->
 ```verse
 ProcessWithTimeout()<suspends><transacts>:void =
@@ -1058,6 +1051,7 @@ ProcessWithTimeout()<suspends><transacts>:void =
             Sleep(10.0)  # Timeout
     # If timeout wins, first block is cancelled and defer runs
 ```
+<!-- #> -->
 
 This ensures cleanup happens even when concurrency control interrupts your code.
 
@@ -1068,7 +1062,6 @@ cascade of cleanup operations:
 
 <!--versetest
 Log(S:string)<transacts>:void={}
-<#
 -->
 <!-- 66 -->
 ```verse
@@ -1082,7 +1075,6 @@ ProcessWithCleanup():void =
     Log("D")
     # Output: A D B C inner
 ```
-<!-- #> -->
 
 The execution order follows the LIFO principle at each nesting
 level—inner defers execute after the outer defer's code, maintaining
@@ -1094,7 +1086,6 @@ Defers work correctly within all control flow constructs:
 
 <!--versetest
 Log(S:string)<transacts>:void={}
-<#
 -->
 <!-- 67 -->
 ```verse
@@ -1116,7 +1107,6 @@ ProcessWithIf(Condition:logic):void =
             Log("Else cleanup")
         Log("Else body")
 ```
-<!-- #> -->
 
 Each control flow path executes its own defers independently.
 
@@ -1167,16 +1157,9 @@ behavior:
 BaseDamage:float = 50.0
 GetMultiplier()<computes>:float = 1.5
 GetCriticalBonus()<computes>:float = 2.0
-
-M():void =
-    PlayerDamage := profile("Damage Calculation"):
-        BaseDamage * GetMultiplier() * GetCriticalBonus()
-<#
 -->
 <!-- 74 -->
 ```verse
 PlayerDamage := profile("Damage Calculation"):
     BaseDamage * GetMultiplier() * GetCriticalBonus()
 ```
-<!-- #> -->
-

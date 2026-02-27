@@ -815,25 +815,16 @@ item := struct{}
 RemoveItem(P:player, I:item)<transacts><decides>:void = {}
 AddItem(P:player, I:item)<transacts>:void = {}
 ValidateTrade(P1:player, P2:player)<computes><decides>:void = {}
-
+-->
+<!-- 65 -->
+```verse
 TradeItems(PlayerA:player, PlayerB:player, ItemA:item, ItemB:item)<transacts><decides>:void =
     RemoveItem[PlayerA, ItemA]
     RemoveItem[PlayerB, ItemB]
     AddItem(PlayerA, ItemB)
     AddItem(PlayerB, ItemA)
     ValidateTrade[PlayerA, PlayerB]
-<#
--->
-<!-- 65 -->
-```verse
-TradeItems(var PlayerA:player, var PlayerB:player, ItemA:item, ItemB:item)<transacts><decides>:void =
-    RemoveItem(PlayerA, ItemA)
-    RemoveItem(PlayerB, ItemB)
-    AddItem(PlayerA, ItemB)
-    AddItem(PlayerB, ItemA)
-    ValidateTrade[PlayerA, PlayerB]
 ```
-<!-- #> -->
 
 Either the entire trade succeeds, or nothing changes.
 
@@ -1015,14 +1006,6 @@ solution := struct{}
 InitialState()<transacts>:solution = solution{}
 ApplyConstraint(S:solution, C:constraint)<transacts>:void = {}
 ValidateSolution(S:solution)<computes><decides>:void = {}
-
-SolvePuzzle(Constraints:[]constraint)<decides>:solution =
-    var State:solution = InitialState()
-    for (Constraint : Constraints):
-        ApplyConstraint(State, Constraint)
-    ValidateSolution[State]
-    State
-<#
 -->
 <!-- 73 -->
 ```verse
@@ -1033,7 +1016,6 @@ SolvePuzzle(Constraints:[]constraint)<decides>:solution =
     ValidateSolution[State]
     State
 ```
-<!-- #> -->
 
 If any constraint can't be satisfied, the entire attempt fails. In a full logic programming language, this might trigger complex backtracking. In Verse, the failure model is simpler and more predictable while still being expressive enough for most problems.
 

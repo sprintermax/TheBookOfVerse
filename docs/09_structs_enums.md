@@ -51,13 +51,6 @@ color := struct:
     G : int = 0
     B : int = 0
     A : int = 255
-
-M()<transacts>:void =
-    Origin := vector2{}
-    PlayerPos := vector2{X := 100.0, Y := 250.0}
-    RedColor := color{R := 255}
-    NewPos := PlayerPos
-<#
 -->
 <!-- 02 -->
 ```verse
@@ -69,7 +62,6 @@ RedColor := color{R := 255}  # Other channels default to 0/255
 NewPos := PlayerPos
 # NewPos is a separate instance with the same values
 ```
-<!-- #> -->
 
 Since structs are value types, assigning a struct to a variable creates a copy of all its data. This differs from classes, which use reference semantics.
 
@@ -662,35 +654,6 @@ recursive_enum := enum:
   #  bad_recursive  # Error: shadows the type name
 ```
 
-### Attributes on Enums
-
-Enums support custom attributes, both on the enum type itself and on individual enumerators:
-
-<!-- TODO: this one fails with invalid access of @attribscope_enum. Needs language support. -->
-<!--NoCompile-->
-<!-- 24 -->
-```verse
-# Define my_attribute by inheriting from the attribute class
-@attribscope_enum
-my_attribute := class(attribute):
-    MyMetaData:string = "I'm default metadata"
-    # category<constructor>(Name:string)<computes> := my_attribute{}
-
-    # Apply to enum and enumerators
-@my_attribute{}
-game_state := enum:
-    @my_attribute{MyMetaData = "Initial"}
-    MainMenu
-
-    @my_attribute{MyMetaData = "Active"}
-    Playing
-
-    @my_attribute{MyMetaData = "Paused"}
-    Paused
-```
-
-Attributes must be marked with the appropriate scopes (`@attribscope_enum` for enum types, `@attribscope_enumerator` for individual values) or the compiler will reject them. This provides metadata capabilities for reflection, serialization, or custom tooling.
-
 ### Comparison
 
 Enum values are fully comparable, meaning they support both equality (`=`) and inequality (`<>`) operators. This makes them ideal for state tracking and conditional logic:
@@ -708,17 +671,6 @@ game_state := enum:
 
 PlaySwordAnimation()<transacts>:void = {}
 OnStateChanged(Prev:game_state, Curr:game_state)<transacts>:void = {}
-
-M()<transacts>:void =
-    CurrentWeapon := weapon_type.Sword
-    if (CurrentWeapon = weapon_type.Sword):
-        PlaySwordAnimation()
-
-    var CurrentState:game_state = game_state.MainMenu
-    PreviousState := game_state.Playing
-    if (CurrentState <> PreviousState):
-        OnStateChanged(PreviousState, CurrentState)
-<#
 -->
 <!-- 25 -->
 ```verse
@@ -726,11 +678,11 @@ CurrentWeapon := weapon_type.Sword
 if (CurrentWeapon = weapon_type.Sword):
     PlaySwordAnimation()
 
+CurrentState := game_state.Paused
 PreviousState := game_state.Playing
 if (CurrentState <> PreviousState):
     OnStateChanged(PreviousState, CurrentState)
 ```
-<!-- #> -->
 
 Enum values from the same enum type can be compared, while values from different enum types are always unequal:
 
