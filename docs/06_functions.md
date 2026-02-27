@@ -10,11 +10,6 @@ abstraction is what makes functions powerful - you define the
 instructions once and reuse them in different contexts throughout your
 code.
 
-<!-- TODO: We say "logic" a lot but we currently don't have it. Should
-that be toned down?  My current idea is to have some subsection early
-on that will explain the difference between MaxVerse and
-ShipVerse.-->
-
 ## Parameters
 
 Functions can accept any number of parameters, from none at all to as
@@ -82,7 +77,7 @@ assert_semantic_error(3629):
 -->
 <!-- 04-->
 ```verse
-Invalid: named followed by positional
+# Invalid: named followed by positional
 Invalid(? Named:int, Positional:string):void = {}  # ERROR
 ```
 <!-- #>-->
@@ -103,7 +98,7 @@ Configure(Required:int, ?Option1:string, ?Option2:logic):void = { }
 Configure(42, ?Option1:="test", ?Option2:=true)
 
 # Invalid: named arg before positional
-# Configure(?Option1:="test", 42, ?Option2:=true)  # ERROR
+Configure(?Option1:="test", 42, ?Option2:=true)  # ERROR
 ```
 <!-- #>-->
 
@@ -866,10 +861,9 @@ This works when the tuple type matches the parameter list.
 
 ## Lambdas
 
-**Note:** Lambda expressions with the `=>` operator are not yet
+Lambda expressions with the `=>` operator are not
 supported in the current version of Verse. For creating function
-values and closures, use nested functions instead (see the Nested
-Functions section below).
+values and closures, use nested functions instead.
 
 Functions are first-class values; they can be stored in variables,
 passed as parameters, and returned from other functions. This enables
@@ -1060,10 +1054,8 @@ Within `type{}`, function declarations must have return types but
 Function types work as field types in classes:
 
 <!--versetest
-
 calculator := class:
     Operation:type{_(:int,:int):int}
-
 -->
 <!-- 74-->
 ```verse
@@ -1424,7 +1416,9 @@ Identity(42)        # t inferred as int, returns 42
 Identity("hello")   # t inferred as string, returns "hello"
 ```
 
-The `where t:type` clause declares `t` as a type parameter with the constraint `type`, meaning it can be any Verse type. The function signature `(X:t):t` means "takes a value of type `t` and returns a value of that same type `t`."
+The `where t:type` clause declares `t` as a type parameter with the constraint `type`, 
+meaning it can be any Verse type. 
+The function signature `(X:t):t` means "takes a value of type `t` and returns a value of that same type `t`."
 
 <!--NoCompile-->
 <!-- 90-->
@@ -1646,7 +1640,8 @@ CheckStatus(E:t where t:subtype(entity)):string =
 
 ### Polarity and Variance
 
-Type parameters must be used consistently according to variance rules. This ensures type safety when functions are used as values or passed as arguments.
+Type parameters must be used consistently according to variance rules. 
+This ensures type safety when functions are used as values or passed as arguments.
 
 **Covariant positions** (safe for return types):
 
@@ -1685,9 +1680,9 @@ assert_semantic_error(3552):
 -->
 <!-- 102-->
 ```verse
-# ERROR 3552: Cannot return type that's invariant in t
-# c(t:type) := class{var X:t}  # Mutable field makes c invariant in t
-# MakeContainer(X:t where t:type):c(t) = c(t){X := X}
+# ERROR: Cannot return type that's invariant in t
+c(t:type) := class{var X:t}  # Mutable field makes c invariant in t
+MakeContainer(X:t where t:type):c(t) = c(t){X := X}
 ```
 <!-- #>-->
 
@@ -1743,12 +1738,12 @@ assert_semantic_error(3502):
 -->
 <!-- 105-->
 ```verse
-# ERROR 3502: Cannot capture overloaded function
+# ERROR: Cannot capture overloaded function
 f(x:int):void = {}
 f(x:float):void = {}
 
 # Error: which f?
-# g:void = f
+g:void = f
 ```
 <!-- #>-->
 
@@ -1781,7 +1776,7 @@ assert_semantic_error(3532):
 -->
 <!-- 107-->
 ```verse
-# ERROR 3532: Same parameter type
+# ERROR: Same parameter type
 f(x:int):void = {}
 f(x:int)<transacts><decides>:void = {}  # ERROR
 ```
@@ -1935,7 +1930,7 @@ Class names cannot be overloaded:
 <!--NoCompile-->
 <!-- 113-->
 ```verse
-# ERROR 3588, 3532: Cannot overload class name
+# ERROR: Cannot overload class name
 # C := class{}
 # C(x:int):C = C{}
 ```
@@ -1955,7 +1950,7 @@ assert_semantic_error(3518):
 -->
 <!-- 114-->
 ```verse
-# ERROR 3518: Cannot determine which overload
+# ERROR: Cannot determine which overload
 F(X:int):int = X
 F(X:float):float = X
 
@@ -1997,11 +1992,11 @@ assert_semantic_error(3512):
 -->
 <!-- 116-->
 ```verse
-# ERROR 3512: suspends version needs spawn context
+# ERROR: suspends version needs spawn context
 f(x:int):void = {}
 f(x:float)<suspends>:void = {}
 
-# g():void = f(1.0)  # ERROR - float version is suspends
+g():void = f(1.0)  # ERROR - float version is suspends
 ```
 <!-- #>-->
 
@@ -2016,11 +2011,11 @@ assert_semantic_error(3538):
 -->
 <!-- 117-->
 ```verse
-# ERROR 3538: Cannot spawn non-suspends function
+# ERROR: Cannot spawn non-suspends function
 f(x:int):void = {}
 f(x:float)<suspends>:void = {}
 
-# g():void = spawn{f(1)}  # ERROR - int version not suspends
+g():void = spawn{f(1)}  # ERROR - int version not suspends
 ```
 <!-- #>-->
 

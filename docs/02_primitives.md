@@ -613,9 +613,13 @@ assert:
     Dividend:int = 15
     Divisor:int = 4
     Dividend = Quotient[Dividend, Divisor] * Divisor + Mod[Dividend, Divisor]
+
+assert:
     Dividend:int = -15
     Divisor:int = 4
     Dividend = Quotient[Dividend, Divisor] * Divisor + Mod[Dividend, Divisor]
+
+assert:
     Dividend:int = -1
     Divisor:int = -2
     Dividend = Quotient[Dividend, Divisor] * Divisor + Mod[Dividend, Divisor]

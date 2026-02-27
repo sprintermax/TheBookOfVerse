@@ -594,12 +594,12 @@ This is different from class reference semantics—collections copy, classes sha
 When collections contain classes or structs with mutable fields, you can mutate through the collection:
 
 <!--versetest
-the_class := class:
+my_class := class:
     var X:[]int = array{0}
 -->
 <!-- 29 -->
 ```verse
-C := the_class{}
+C := my_class{}
 set C.X[0] = 4266642
 C.X[0] = 4266642
 ```
@@ -607,17 +607,16 @@ C.X[0] = 4266642
 **Map values with mutable members:**
 
 <!--versetest
-class0 := class:
-    var AM:int = 20
+my_class := class{  var X:int = 0 }
 -->
 <!-- 30 -->
 ```verse
-var M:[int]class0 = map{0 => class0{}}
-M[0].AM = 20
+var M:[int]my_class = map{0 => my_class{}}
+M[0].X = 0
 
 # Mutate class field through map
-set M[0].AM = 30
-M[0].AM = 30
+set M[0].X = 30
+M[0].X = 30
 ```
 
 The map constructed from a `var` doesn't track changes to the source variable:
@@ -625,14 +624,13 @@ The map constructed from a `var` doesn't track changes to the source variable:
 <!--versetest-->
 <!-- 31 -->
 ```verse
-var I0:int = 42
-M:[int]int = map{0 => I0}
+var I:int = 42
+M:[int]int = map{0 => I}
 M[0] = 42
 
-set I0 = 0
+set I = 0
 M[0] = 42  # Still 42! Map has a copy of the value
 ```
-
 
 ### Arrays of Structs: Independent Copies
 
@@ -702,21 +700,21 @@ This is a critical distinction: **structs in collections are copies, classes in 
 Verse supports compound assignment operators that combine arithmetic with mutation:
 
 <!--versetest
-struct0 := struct<computes>:
+my_struct:= struct<computes>:
     A:int = 10
 -->
 <!-- 34 -->
 ```verse
-var S0:struct0 = struct0{}
+var S:my_struct = my_struct{}
 
-set S0.A += 10
-S0.A = 20
+set S.A += 10
+S.A = 20
 
-set S0.A -= 3
-S0.A = 17
+set S.A -= 3
+S.A = 17
 
-set S0.A *= 4
-S0.A = 68
+set S.A *= 4
+S.A = 68
 ```
 
 Available compound operators:
@@ -860,11 +858,11 @@ assert_semantic_error(3509):
 <!-- 41 -->
 ```verse
 classX := class:
-    AI:int = 20  # Immutable field
+    X:int = 20  # Immutable field
 
-CX:classX = classX{}
-CX.AI = 20
-set CX.AI = 30  # Error: Cannot mutate immutable class field
+C:= classX{}
+C.X = 20
+set C.X = 30  # Error: Cannot mutate immutable class field
 ```
 <!-- #> -->
 

@@ -411,7 +411,19 @@ Verse has a set of naming conventions that make code readable and predictable. W
 
 Identifiers should be in PascalCase (CamelCase starting with uppercase):
 
-<!--versetest-->
+<!--versetest
+player_record := struct:
+    Name:string
+
+PlayerDatabase(Id:int)<decides>:player_record =
+    if (Id = 0):
+        player_record{Name := "Alice"}
+    else if (Id = 1):
+        player_record{Name := "Bob"}
+    else:
+        false?
+        player_record{Name := ""}
+-->
 <!-- 09 -->
 ```verse
 # Variables and constants use PascalCase

@@ -1239,19 +1239,22 @@ ValidFunc(A:int, B:int):void = {}
 
 ### In Specific Scopes
 
-At the top level of a module, semicolons and commas are *interchangeable* - both simply separate definitions:
+Within block expressions (braces), semicolons and commas are interchangeable as separators between definitions:
 
-<!--versetest
-X:int = 0, Y:int = 0
-<#
--->
+<!--versetest-->
 <!-- 57 -->
 ```verse
-# Both valid and equivalent
-X:int = 0; Y:int = 0
-X:int = 0, Y:int = 0
+# In block scope, all three separators work:
+block:
+    X:int = 0; Y:int = 0      # Semicolon separator
+
+block:
+    X:int = 0, Y:int = 0      # Comma separator
+
+block:
+    X:int = 0                 # Newline separator (most common)
+    Y:int = 0
 ```
-<!-- #> -->
 
 In `logic{}` constructor - both semicolons and commas work, but with
 different semantics based on the construct's behavior:

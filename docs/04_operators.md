@@ -33,7 +33,7 @@ Postfix operators bind to the expression on their left. While some (like `.`) ap
 - `Function()` - Function call (the `()` operates on the function to its left)
 - `Constructor{}` - Object construction (the `{}` operates on the type to its left)
 
-**Note:** Although `.` appears *between* `Player` and `Respawn` in `Player.Respawn()`, it's considered postfix because it binds to `Player` and selects a member from it. The right side (`Respawn`) is not a separate operand but a member selector
+Although `.` appears *between* `Player` and `Respawn` in `Player.Respawn()`, it's considered postfix because it binds to `Player` and selects a member from it. The right side (`Respawn`) is not a separate operand but a member selector
 
 ## Precedence
 
@@ -54,7 +54,7 @@ The precedence levels from highest to lowest are:
 | 2 | ~~Lambda expressions~~ | ~~Function literals~~ (not yet supported) | Special | N/A | N/A |
 | 1 | `:=`, `set =` | Assignment | Infix | Right | `X := 15`, `set Y = 25` |
 
-**Note on `=` operator:** The `=` symbol serves two distinct purposes in Verse:
+The `=` symbol serves two distinct purposes in Verse:
 - **Relational comparison** (precedence 7): When used as an operator in expressions, `A = B` tests equality and returns a logic value
 - **Assignment** (precedence 1): When used with the `set` keyword, `set X = Value` assigns a new value to an existing variable
 
