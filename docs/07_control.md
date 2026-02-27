@@ -48,12 +48,6 @@ introduce the block and indentation to show structure:
 IsPlayerReady()<decides><transacts>:void = {}
 StartMatch()<transacts>:void = {}
 BeginCountdown()<transacts>:void = {}
-
-M()<transacts>:void =
-    if (IsPlayerReady[]):
-        StartMatch()
-        BeginCountdown()
-<#
 -->
 <!-- 02 -->
 ```verse
@@ -61,7 +55,6 @@ if (IsPlayerReady[]):
     StartMatch()
     BeginCountdown()
 ```
-<!-- #> -->
 
 The multi-line braced format offers familiarity for programmers coming
 from C-style languages:
@@ -70,13 +63,6 @@ from C-style languages:
 IsPlayerReady()<decides><transacts>:void = {}
 StartMatch()<transacts>:void = {}
 BeginCountdown()<transacts>:void = {}
-
-M()<transacts>:void =
-    if (IsPlayerReady[]) {
-        StartMatch()
-        BeginCountdown()
-    }
-<#
 -->
 <!-- 03 -->
 ```verse
@@ -85,7 +71,6 @@ if (IsPlayerReady[]) {
     BeginCountdown()
 }
 ```
-<!-- #> -->
 
 For simple operations, the single-line dot format keeps code concise:
 
@@ -109,14 +94,6 @@ CalculateScore()<computes>:int = 100
 CalculateBonus(Time:float)<computes>:int = 50
 CompletionTime:float = 10.0
 AccuracyValue:float = 0.95
-
-M()<transacts><decides>:void =
-    FinalScore := block:
-        Base := CalculateScore()
-        Bonus := CalculateBonus(CompletionTime)
-        Accuracy := Floor[AccuracyValue * 100.0]
-        Base + Bonus + Accuracy
-<#
 -->
 <!-- 05 -->
 ```verse
@@ -126,7 +103,6 @@ FinalScore := block:              # The variable has the block's value
     Accuracy := Floor[AccuracyValue * 100.0]
     Base + Bonus + Accuracy       # This becomes the block's value
 ```
-<!-- #> -->
 
 
 ## If Expressions
@@ -147,7 +123,6 @@ weapon:=class<computes>{
 }
 ConsumeAmmo():void={}
 PlayJumpSound():void={}
-<#
 -->
 <!-- 07 -->
 ```verse
@@ -162,7 +137,6 @@ HandlePlayerAction(Player:player, Action:string):void =
         # Default action
         Player.Idle()
 ```
-<!-- #> -->
 
 This approach allows you to chain conditions that might fail without
 explicit error handling at each step.
@@ -337,7 +311,6 @@ GetVector(Dir:direction):tuple(int, int) =
         direction.South => (0, -1)
         direction.East => (1, 0)
         direction.West => (-1, 0)
-<#
 -->
 <!-- 17 -->
 ```verse
@@ -351,7 +324,6 @@ GetVector(Dir:direction):tuple(int, int) =
 
 GetVector(direction.North) = (0, 1)
 ```
-<!-- #> -->
 
 If you add a wildcard when all cases are covered, you'll get a warning
 that the wildcard is unreachable:
@@ -370,7 +342,6 @@ GetVectorWithUnreachable(Dir:direction):tuple(int, int) =
         direction.East => (1, 0)
         direction.West => (-1, 0)
         _ => (0, 0)
-<#
 -->
 <!-- 18 -->
 ```verse
@@ -381,7 +352,6 @@ GetVectorWithUnreachable(Dir:direction):tuple(int, int) =
         direction.West => (-1, 0)
         _ => (0, 0)  # Warning: all cases already covered
 ```
-<!-- #> -->
 
 Incomplete case coverage is allowed in a `<decides>` context:
 
@@ -392,7 +362,6 @@ GetPrimaryDirection2(Dir:direction)<decides>:string =
     case (Dir):
         direction.North => "Primary"
         # Other directions cause function to fail
-<#
 -->
 <!-- 19 -->
 ```verse
@@ -402,7 +371,6 @@ GetPrimaryDirection2(Dir:direction)<decides>:string =
         direction.North => "Primary"
         # Other directions cause function to fail
 ```
-<!-- #> -->
 
 Open enums can have values added after publication, so they can never
 be exhaustive. They always require either a wildcard or a `<decides>`
@@ -414,11 +382,17 @@ The `loop` expression creates an infinite loop that continues until
 explicitly broken:
 
 <!--versetest
-UpdatePlayerPositions():void={}
-CheckCollisions():void={}
-RenderFrame():void={}
-GameOver()<decides>:void={}
-<#
+UpdatePlayerPositions()<transacts>:void={}
+CheckCollisions()<transacts>:void={}
+RenderFrame()<transacts>:void={}
+GameOver()<decides><transacts>:void={}
+
+GameLoop()<transacts>:void =
+    loop:
+        UpdatePlayerPositions()
+        CheckCollisions()
+        RenderFrame()
+        if (GameOver[]). break
 -->
 <!-- 22 -->
 ```verse
@@ -429,7 +403,6 @@ GameLoop():void =
         RenderFrame()
         if (GameOver[]). break
 ```
-<!-- #> -->
 
 The `break` expression exits the loop entirely, terminating iteration.
 `break` has "bottom" type—a type that represents a computation that
@@ -460,7 +433,7 @@ their side effects.
 When `break` appears in nested loops, it exits only the innermost
 enclosing loop:
 
-<!-- Stuck in the interpreter -->
+<!-- BUG: Stuck in the interpreter -->
 <!--NoCompile-->
 <!-- 57 -->
 ```verse
