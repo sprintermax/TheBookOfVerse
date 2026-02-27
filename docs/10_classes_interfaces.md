@@ -910,7 +910,7 @@ MakeCharacter<constructor>(Name:string, Class:string, Level:int) := character:
     # Then delegate to parent constructor
     MakeEntity<constructor>(Name, Level * 100)
 
-# Hero := MakeCharacter("Aldric", "Warrior", 5)
+Hero := MakeCharacter("Aldric", "Warrior", 5)
 ```
 <!-- #>-->
 
@@ -1078,7 +1078,7 @@ interfaces, and modules:
 <!--versetest-->
 <!-- 32-->
 ```verse
-# ERROR 3532: Function at module level shadows class method
+# ERROR: Function at module level shadows class method
 # F(X:int):int = X + 1
 # c := class:
 #     F(X:int):int = X + 2  # ERROR - shadows outer F
@@ -1119,16 +1119,12 @@ the inner scope.
 To define methods with the same name in different contexts, use
 **qualified names** with the syntax `(ClassName:)MethodName`:
 
-<!--versetest
-# Class with qualified method of same name
-c := class:
-    (c:)F(X:int):int = X + 2
--->
+<!--versetest-->
 <!-- 34-->
 ```verse
 # Class with qualified method of same name
-# c := class:
-#    (c:)F(X:int):int = X + 2
+c := class:
+   (c:)F(X:int):int = X + 2
 
 # Module-level function
 F(X:int):int = X + 1
@@ -1511,8 +1507,20 @@ NamedValue := pair(string, float){First := "score", Second := 99.5}
 
 Type parameters are available throughout the class, including in methods:
 
-TODO
-<!--NoCompile-->
+<!--versetest
+optional_container(t:type) := class:
+    var MaybeValue:?t = false
+
+    Set(Value:t):void =
+        set MaybeValue = option{Value}
+
+    Get()<decides>:t =
+        MaybeValue?
+
+    Clear():void =
+        set MaybeValue = false
+<#
+-->
 <!-- 48-->
 ```verse
 optional_container(t:type) := class:
@@ -1527,6 +1535,7 @@ optional_container(t:type) := class:
     Clear():void =
         set MaybeValue = false
 ```
+<!-- #> -->
 
 Methods automatically know about the type parameter from the class
 definition—you don't redeclare it in method signatures.
@@ -2138,9 +2147,25 @@ collection_ifc(t:type) := interface:
 Classes implement parametric interfaces by providing concrete types
 for the parameters:
 
-<!-- NoCompile-->
+<!-- versetest 
+equivalence(t:type, u:type) := interface:
+    Equal(Left:t, Right:u)<transacts><decides>:t
+
+int_equivalence := class(equivalence(int, comparable)):
+    Equal<override>(Left:int, Right:comparable)<transacts><decides>:int =
+        Left = Right
+
+# Or with type parameters matching the class
+comparable_equivalence(t:subtype(comparable)) := class(equivalence(t, comparable)):
+    Equal<override>(Left:t, Right:comparable)<transacts><decides>:t =
+        Left = Right
+<#
+-->
 <!-- 81-->
 ```verse
+equivalence(t:type, u:type) := interface:
+    Equal(Left:t, Right:u)<transacts><decides>:t
+
 # Implement with specific types
 int_equivalence := class(equivalence(int, comparable)):
     Equal<override>(Left:int, Right:comparable)<transacts><decides>:int =
@@ -2151,6 +2176,7 @@ comparable_equivalence(t:subtype(comparable)) := class(equivalence(t, comparable
     Equal<override>(Left:t, Right:comparable)<transacts><decides>:t =
         Left = Right
 ```
+<!-- #> -->
 
 Here's an example of using the parametric interface:
 
@@ -2295,77 +2321,36 @@ player := class(entity):
 # Implement with specific types
 player_to_entity := class(converter_interface(player, entity)):
     Convert<override>(In:player):entity = entity{ID := In.ID}
-<#
+
 -->
 <!-- 841-->
 ```verse
 # Variance allows flexible usage
 C:converter_interface(player, entity) = player_to_entity{}
 ```
-<!-- #>-->
 
 ### Advanced Parametric Types
-
-#### First-Class Parametrics
-
-Parametric type definitions can be used as first-class values, allowing dynamic type application:
-
-<!-- NoCompile-->
-<!-- 85-->
-```verse
-# Parametric class
-container(t:type) := class:
-    Value:t
-
-# Store parametric type as value
-TypeConstructor := container
-```
-
-And a use case:
-
-<!-- NoCompile-->
-<!-- 851-->
-```verse
-# Apply type argument dynamically
-IntContainer := TypeConstructor(int)
-
-# Construct instance
-Instance := IntContainer{Value := 42}
-Instance.Value = 42  # Success
-```
-
-This enables powerful patterns for generic factories and type-driven
-programming:
-
-<!--NoCompile-->
-<!-- 86-->
-```verse
-# Factory that works with any parametric container
-CreateContainer(TypeCtor:type, Value:t where t:type) :type=
-    TypeCtor(t){Value := Value}
-
-# Can work with different container types
-container1(t:type) := class:
-    Value:t
-
-container2(t:type) := class:
-    Data:t
-```
-
-And a use:
-
-<!-- NoCompile-->
-<!-- 86-->
-```verse
-X := CreateContainer(container1, 42)  # container1(int)
-Y := CreateContainer(container2, "hello")  # container2(string)
-```
 
 #### Effects
 
 Parametric types can have effect specifiers that apply to all instantiations:
 
-<!-- NoCompile-->
+<!-- versetest 
+# Parametric class with effects
+async_container(t:type) := class<computes>:
+    Property:t
+
+# All instantiations inherit the effect
+X:async_container(int) = async_container(int){Property := 1}  # <computes> effect
+
+# Multiple effects
+transactional_container(t:type) := class<transacts>:
+    Property:t
+
+assert:
+    Y:transactional_container(int) = transactional_container(int){Property := 2}
+<#
+-->
 <!-- 88-->
 ```verse
 # Parametric class with effects
@@ -2382,6 +2367,7 @@ transactional_container(t:type) := class<transacts>:
 # Constructor inherits effects
 # Y:transactional_container(int) = transactional_container(int){Property := 2}
 ```
+<!-- #> -->
 
 **Allowed effects:**
 
@@ -2399,7 +2385,15 @@ transactional_container(t:type) := class<transacts>:
 
 **Effect propagation:**
 
-<!-- NoCompile-->
+<!-- versetest 
+my_type(t:type) := class<computes>:
+    Property:t
+
+# This requires <computes> in the context
+CreateInstance()<computes>:my_type(int) =
+    my_type(int){Property := 1}
+<#
+-->
 <!-- 89-->
 ```verse
 # Effect on parametric type propagates to constructor
@@ -2410,6 +2404,7 @@ my_type(t:type) := class<computes>:
 CreateInstance()<computes>:my_type(int) =
     my_type(int){Property := 1}
 ```
+<!-- #> -->
 
 The effect becomes part of the type's contract—all code constructing or working with instances must account for these effects.
 
@@ -2525,36 +2520,18 @@ dynamic_handler(t:castable_subtype(component)) := class:
             # Typed has the specific subtype
             ProcessTyped(Typed)
 ```
-<!-- #>-->
-
-**Multiple constraints:**
-
-TODO BROKEN
-
-<!--NoCompile-->
-<!-- 97-->
-```verse
-# Combine multiple requirements
-sorted_unique(t:type where t:subtype(comparable)) := class<unique>:
-    var Items:[]t = array{}
-
-    Add(Item:t):void =
-        # Can use comparison because t:subtype(comparable)
-        if (not Contains(Item)):
-            set Items = Sort(Items + array{Item})
-
-    Contains(Item:t):logic =
-        for (Element : Items):
-            if (Element = Item):
-                return true
-        false
-```
+<!-- #> -->
 
 **Constraint propagation:**
 
 <!--versetest
+# Constraints propagate through function calls
 wrapper(t:subtype(comparable)) := class:
     Data:t
+
+Process(W:wrapper(t) where t:subtype(comparable))<computes><decides>:void =
+    # Compiler knows t is comparable here
+    W.Data = W.Data
 <#
 -->
 <!-- 98-->
@@ -2567,7 +2544,7 @@ Process(W:wrapper(t) where t:subtype(comparable))<computes><decides>:void =
     # Compiler knows t is comparable here
     W.Data = W.Data
 ```
-<!-- #>-->
+<!-- #> -->
 
 When defining parametric functions that work with parametric types,
 the constraints must be compatible:
@@ -2575,9 +2552,10 @@ the constraints must be compatible:
 <!--versetest
 base_class := class:
     ID:int
-
 constrained(t:subtype(base_class)) := class:
     Data:t
+UseConstrained(C:constrained(t) where t:subtype(base_class)):int =
+    C.Data.ID
 <#
 -->
 <!-- 99-->
@@ -2593,11 +2571,10 @@ UseConstrained(C:constrained(t) where t:subtype(base_class)):int =
     C.Data.ID
 
 # Invalid: Missing or incompatible constraint
-# UseConstrained(C:constrained(t) where t:type):int =  # ERROR 3509
-#     C.Data.ID
+UseConstrained(C:constrained(t) where t:type):int =  # ERROR 
+    C.Data.ID
 ```
-<!-- #>-->
-
+<!-- #> -->
 ### Access Specifiers
 
 Classes support fine-grained control over member visibility through
@@ -2633,7 +2610,7 @@ details.
 The `<concrete>` specifier enforces that all fields have default
 values, allowing construction with an empty archetype:
 
-<!--NoCompile-->
+<!--versetest-->
 <!-- 101-->
 ```verse
 config := class<concrete>:
@@ -2672,7 +2649,7 @@ E1 := entity{Name := "Guard", Position := vector3{X := 0.0, Y := 0.0, Z := 0.0}}
 E2 := entity{Name := "Guard", Position := vector3{X := 0.0, Y := 0.0, Z := 0.0}}
 E3 := E1
 
-E1 = E2  # Fails - different instances despite identical field values
+not(E1 = E2 ) # Fails - different instances despite identical field values
 E1 = E3  # Succeeds - same instance
 }
 <#
@@ -3283,8 +3260,6 @@ inherits from or contains parametric types:
 <!--versetest
 container(t:type) := class:
     Value:t
-
-# Valid: concrete instantiation of parametric type
 int_container := class<castable>(container(int)):
     Extra:string
 <#
@@ -3306,15 +3281,23 @@ The `castable_subtype` type constructor works with `<castable>`
 classes to enable type-safe filtered queries and dynamic type
 dispatch:
 
-<!--NoCompile-->
+<!--versetest
+  component<public> := class<abstract><unique><castable>:
+      Parent<public>:entity
+
+  entity<public> := class<concrete><unique><transacts><castable>:
+      FindDescendantEntities(entity_type:castable_subtype(entity)):[]entity_type = array{}
+<#
+-->
 <!-- 122-->
 ```verse
   component<public> := class<abstract><unique><castable>:
       Parent<public>:entity
 
   entity<public> := class<concrete><unique><transacts><castable>:
-      FindDescendantEntities(entity_type:castable_subtype(entity)):generator(entity_type)
+      FindDescendantEntities(entity_type:castable_subtype(entity)):[]entity_type
 ```
+<!-- #> -->
 
 When you call `FindDescendantEntities(player)`, the function returns
 only entities that are actually player instances or subclasses
@@ -3408,7 +3391,7 @@ construction. When a field is marked `<final>` and has a default value,
 that value is locked and cannot be changed when creating instances:
 
 <!-- versetest-->
-<!-- 124b-->
+<!-- 1241-->
 ```verse
 foo := class<computes>:
     Val<final>:int = 0
@@ -3520,28 +3503,17 @@ management transparently.
 
 <!--versetest
 player:=string
-
-player_inventory := class<final><persistable>:
-    Gold:int = 0
-    Items:[]string = array{}
-    UnlockedAreas:[]string = array{}
-
-# This variable automatically persists across sessions
-SavedInventories : weak_map(player, player_inventory) = map{}
-<#
 -->
 <!-- 127-->
 ```verse
-  player_inventory := class<final><persistable>:
+player_inventory := class<final><persistable>:
       Gold:int = 0
       Items:[]string = array{}
       UnlockedAreas:[]string = array{}
 
-  # This variable automatically persists across sessions
-
-  SavedInventories : weak_map(player, player_inventory) = map{}
+# This variable automatically persists across sessions
+SavedInventories : weak_map(player, player_inventory) = map{}
 ```
-<!-- #>-->
 
 The `<persistable>` specifier enforces strict structural requirements
 to guarantee data integrity across versions. Classes must be `<final>`
@@ -3603,20 +3575,6 @@ healable:=interface:
     Heal(Amount:int)<transacts>:void ={}
 
 damageable:=interface{}
-
-character := class(damageable, healable):
-    var Health : int = 100
-    MaxHealth : int = 100
-
-    TakeDamage<override>(Amount:int)<transacts>:void =
-        set Health = Max(0, Health - Amount)
-
-    GetHealth<override>():int = Health
-
-    Heal<override>(Amount:int)<transacts>:void =
-        set Health = Min(MaxHealth, Health + Amount)
-
-<#
 -->
 <!-- 129-->
 ```verse
@@ -3632,7 +3590,6 @@ character := class(damageable, healable):
     Heal<override>(Amount:int)<transacts>:void =
         set Health = Min(MaxHealth, Health + Amount)
 ```
-<!-- #>-->
 
 A class can implement multiple interfaces, effectively achieving
 multiple inheritance of both behavior contracts and data
