@@ -702,7 +702,7 @@ The `modifier_stack` pattern provides a composable solution using live variables
 
 The modifier stack consists of three components:
 
-1. **`modifier_ifc(t)`** - An interface for modifiers that transform values of type `t`
+1. **`modifier_iterface(t)`** - An interface for modifiers that transform values of type `t`
 2. **`modifier_stack(t)`** - A container that orders and composes modifiers
 3. **Live variable** - Uses `modifier_stack.Evaluate` as its type for automatic reactivity
 
@@ -713,12 +713,12 @@ The public API is as follows:
 <!--NoCompile-->
 <!-- 22-->
 ```verse
-modifier_ifc(t : type) := interface:
+modifier_iterface(t : type) := interface:
    Evaluate(Value:t)<reads> : t
 
 modifier_stack(t:type) := class:
    # Insert a Modifier at Position; return a cancelable used to remove the Modifier.
-   AddModifier<final>(Modifier:modifier_ifc(t), Position:rational)<transacts>: cancelable
+   AddModifier<final>(Modifier:modifier_iterface(t), Position:rational)<transacts>: cancelable
 
    # Returns the input Value evaluated against each modifier in the stack in position order.
    Evaluate<final>(Value:t)<reads> : t
@@ -745,11 +745,11 @@ In more detail, this example demonstrates two modifiers working together: a `mag
 <!-- 24-->
 ```verse
 # Define modifier implementations
-magic_potion := class(modifier_ifc(float)):
+magic_potion := class(modifier_iterface(float)):
    var Value:float
    Evaluate<override>(Arg:float)<reads>:float = Arg * Value
 
-clamp := class(modifier_ifc(float)):
+clamp := class(modifier_iterface(float)):
    var Low:float
    var High:float
    Evaluate<override>(Arg:float)<reads>:float =
